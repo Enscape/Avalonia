@@ -45,12 +45,6 @@ namespace Avalonia.Controls
         private DateTime? _onOpenSelectedDate;
         private bool _settingSelectedDate;
 
-        private DateTime _displayDate;
-        private DateTime? _displayDateStart;
-        private DateTime? _displayDateEnd;
-        private bool _isDropDownOpen;
-        private DateTime? _selectedDate;
-        private string? _text;
         private bool _suspendTextChangeHandler = false;
         private bool _isPopupClosing = false;
         private bool _ignoreButtonClick = false;

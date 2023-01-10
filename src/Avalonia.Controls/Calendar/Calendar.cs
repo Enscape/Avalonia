@@ -232,13 +232,8 @@ namespace Avalonia.Controls
         internal const int RowsPerYear = 3;
         internal const int ColumnsPerYear = 4;
 
-        private DateTime? _selectedDate;
         private DateTime _selectedMonth;
         private DateTime _selectedYear;
-
-        private DateTime _displayDate = DateTime.Today;
-        private DateTime? _displayDateStart = null;
-        private DateTime? _displayDateEnd = null;
 
         private bool _isShiftPressed;
         private bool _displayDateIsChanging = false;
@@ -497,11 +492,8 @@ namespace Avalonia.Controls
                 || mode == CalendarSelectionMode.None;
         }
 
-        public static readonly DirectProperty<Calendar, DateTime?> SelectedDateProperty =
-            AvaloniaProperty.RegisterDirect<Calendar, DateTime?>(
-                nameof(SelectedDate),
-                o => o.SelectedDate,
-                (o, v) => o.SelectedDate = v,
+        public static readonly StyledProperty<DateTime?> SelectedDateProperty =
+            AvaloniaProperty.Register<Calendar, DateTime?>(nameof(SelectedDate),
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -529,8 +521,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public DateTime? SelectedDate
         {
-            get { return _selectedDate; }
-            set { SetAndRaise(SelectedDateProperty, ref _selectedDate, value); }
+            get => GetValue(SelectedDateProperty);
+            set => SetValue(SelectedDateProperty, value);
         }
         private void OnSelectedDateChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -726,11 +718,8 @@ namespace Avalonia.Controls
             }
         }
 
-        public static readonly DirectProperty<Calendar, DateTime> DisplayDateProperty =
-            AvaloniaProperty.RegisterDirect<Calendar, DateTime>(
-                nameof(DisplayDate),
-                o => o.DisplayDate,
-                (o, v) => o.DisplayDate = v,
+        public static readonly StyledProperty<DateTime> DisplayDateProperty =
+            AvaloniaProperty.Register<Calendar, DateTime>(nameof(DisplayDate),
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -760,8 +749,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public DateTime DisplayDate
         {
-            get { return _displayDate; }
-            set { SetAndRaise(DisplayDateProperty, ref _displayDate, value); }
+            get => GetValue(DisplayDateProperty);
+            set => SetValue(DisplayDateProperty, value);
         }
         internal DateTime DisplayDateInternal { get; private set; }
 
@@ -796,11 +785,8 @@ namespace Avalonia.Controls
             DisplayDateChanged?.Invoke(this, e);
         }
 
-        public static readonly DirectProperty<Calendar, DateTime?> DisplayDateStartProperty =
-            AvaloniaProperty.RegisterDirect<Calendar, DateTime?>(
-                nameof(DisplayDateStart),
-                o => o.DisplayDateStart,
-                (o, v) => o.DisplayDateStart = v,
+        public static readonly StyledProperty<DateTime?> DisplayDateStartProperty =
+            AvaloniaProperty.Register<Calendar, DateTime?>(nameof(DisplayDateStart),
                 defaultBindingMode: BindingMode.TwoWay);
         /// <summary>
         /// Gets or sets the first date to be displayed.
@@ -814,8 +800,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public DateTime? DisplayDateStart
         {
-            get { return _displayDateStart; }
-            set { SetAndRaise(DisplayDateStartProperty, ref _displayDateStart, value); }
+            get => GetValue(DisplayDateStartProperty);
+            set => SetValue(DisplayDateStartProperty, value);
         }
         private void OnDisplayDateStartChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -905,11 +891,8 @@ namespace Avalonia.Controls
             get { return DisplayDateStart.GetValueOrDefault(DateTime.MinValue); }
         }
 
-        public static readonly DirectProperty<Calendar, DateTime?> DisplayDateEndProperty =
-            AvaloniaProperty.RegisterDirect<Calendar, DateTime?>(
-                nameof(DisplayDateEnd),
-                o => o.DisplayDateEnd,
-                (o, v) => o.DisplayDateEnd = v,
+        public static readonly StyledProperty<DateTime?> DisplayDateEndProperty =
+            AvaloniaProperty.Register<Calendar, DateTime?>(nameof(DisplayDateEnd),
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -924,8 +907,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public DateTime? DisplayDateEnd
         {
-            get { return _displayDateEnd; }
-            set { SetAndRaise(DisplayDateEndProperty, ref _displayDateEnd, value); }
+            get => GetValue(DisplayDateEndProperty);
+            set => SetValue(DisplayDateEndProperty, value);
         }
 
         private void OnDisplayDateEndChanged(AvaloniaPropertyChangedEventArgs e)
@@ -2103,7 +2086,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Calendar()
         {
-            UpdateDisplayDate(this, this.DisplayDate, DateTime.MinValue);
+            DisplayDate = DateTime.Today;
+            UpdateDisplayDate(this, DisplayDate, DateTime.MinValue);
             BlackoutDates = new CalendarBlackoutDatesCollection(this);
             SelectedDates = new SelectedDatesCollection(this);
             RemovedItems = new Collection<DateTime>();

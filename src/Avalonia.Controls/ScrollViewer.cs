@@ -45,25 +45,20 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<ScrollViewer, Size> ExtentProperty =
             AvaloniaProperty.RegisterDirect<ScrollViewer, Size>(nameof(Extent),
-                o => o.Extent,
-                (o, v) => o.Extent = v);
+                o => o.Extent);
 
         /// <summary>
         /// Defines the <see cref="Offset"/> property.
         /// </summary>
-        public static readonly DirectProperty<ScrollViewer, Vector> OffsetProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, Vector>(
-                nameof(Offset),
-                o => o.Offset,
-                (o, v) => o.Offset = v);
+        public static readonly StyledProperty<Vector> OffsetProperty =
+            AvaloniaProperty.Register<ScrollViewer, Vector>(nameof(Offset), coerce: CoerceOffset);
 
         /// <summary>
         /// Defines the <see cref="Viewport"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollViewer, Size> ViewportProperty =
             AvaloniaProperty.RegisterDirect<ScrollViewer, Size>(nameof(Viewport),
-                o => o.Viewport,
-                (o, v) => o.Viewport = v);
+                o => o.Viewport);
 
         /// <summary>
         /// Defines the <see cref="LargeChange"/> property.
@@ -103,8 +98,7 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarValueProperty =
             AvaloniaProperty.RegisterDirect<ScrollViewer, double>(
                 nameof(HorizontalScrollBarValue),
-                o => o.HorizontalScrollBarValue,
-                (o, v) => o.HorizontalScrollBarValue = v);
+                o => o.HorizontalScrollBarValue);
 
         /// <summary>
         /// Defines the HorizontalScrollBarViewportSize property.
@@ -148,8 +142,7 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarValueProperty =
             AvaloniaProperty.RegisterDirect<ScrollViewer, double>(
                 nameof(VerticalScrollBarValue),
-                o => o.VerticalScrollBarValue,
-                (o, v) => o.VerticalScrollBarValue = v);
+                o => o.VerticalScrollBarValue);
 
         /// <summary>
         /// Defines the VerticalScrollBarViewportSize property.
@@ -206,7 +199,6 @@ namespace Avalonia.Controls
         private IDisposable? _childSubscription;
         private ILogicalScrollable? _logicalScrollable;
         private Size _extent;
-        private Vector _offset;
         private Size _viewport;
         private Size _oldExtent;
         private Vector _oldOffset;
@@ -223,6 +215,8 @@ namespace Avalonia.Controls
         {
             HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer, ScrollBarVisibility>((x, e) => x.ScrollBarVisibilityChanged(e));
             VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer, ScrollBarVisibility>((x, e) => x.ScrollBarVisibilityChanged(e));
+
+            OffsetProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.CalculatedPropertiesChanged());
         }
 
         /// <summary>
@@ -266,18 +260,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Vector Offset
         {
-            get
-            {
-                return _offset;
-            }
-
-            set
-            {
-                if (SetAndRaise(OffsetProperty, ref _offset, CoerceOffset(Extent, Viewport, value)))
-                {
-                    CalculatedPropertiesChanged();
-                }
-            }
+            get => GetValue(OffsetProperty);
+            set => SetValue(OffsetProperty, value);
         }
 
         /// <summary>
@@ -357,14 +341,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the horizontal scrollbar value.
         /// </summary>
-        protected double HorizontalScrollBarValue
+        public double HorizontalScrollBarValue
         {
-            get { return _offset.X; }
-            set
+            get { return Offset.X; }
+            protected set
             {
-                if (_offset.X != value)
+                var old = Offset.X;
+                if (old != value)
                 {
-                    var old = Offset.X;
                     Offset = Offset.WithX(value);
                     RaisePropertyChanged(HorizontalScrollBarValueProperty, old, value);
                 }
@@ -390,14 +374,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the vertical scrollbar value.
         /// </summary>
-        protected double VerticalScrollBarValue
+        public double VerticalScrollBarValue
         {
-            get { return _offset.Y; }
-            set
+            get { return Offset.Y; }
+            protected set
             {
-                if (_offset.Y != value)
+                var old = Offset.Y;
+                if (old != value)
                 {
-                    var old = Offset.Y;
                     Offset = Offset.WithY(value);
                     RaisePropertyChanged(VerticalScrollBarValueProperty, old, value);
                 }
@@ -481,7 +465,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void PageUp()
         {
-            VerticalScrollBarValue = Math.Max(_offset.Y - _viewport.Height, 0);
+            VerticalScrollBarValue = Math.Max(Offset.Y - _viewport.Height, 0);
         }
 
         /// <summary>
@@ -489,7 +473,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void PageDown()
         {
-            VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
+            VerticalScrollBarValue = Math.Min(Offset.Y + _viewport.Height, VerticalScrollBarMaximum);
         }
 
         /// <summary>
@@ -497,7 +481,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void PageLeft()
         {
-            HorizontalScrollBarValue = Math.Max(_offset.X - _viewport.Width, 0);
+            HorizontalScrollBarValue = Math.Max(Offset.X - _viewport.Width, 0);
         }
 
         /// <summary>
@@ -505,7 +489,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void PageRight()
         {
-            HorizontalScrollBarValue = Math.Min(_offset.X + _viewport.Width, HorizontalScrollBarMaximum);
+            HorizontalScrollBarValue = Math.Min(Offset.X + _viewport.Width, HorizontalScrollBarMaximum);
         }
 
         /// <summary>
@@ -640,6 +624,12 @@ namespace Avalonia.Controls
             }
 
             return false;
+        }
+
+        private static Vector CoerceOffset(AvaloniaObject sender, Vector value)
+        {
+            var scrollViewer = (ScrollViewer)sender;
+            return CoerceOffset(scrollViewer.Extent, scrollViewer.Viewport, scrollViewer.Offset);
         }
 
         internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)

@@ -49,6 +49,8 @@ namespace Avalonia
         /// </summary>
         public abstract Type Owner { get; }
 
+        public override bool IsReadOnly => true;
+
         /// <summary>
         /// Gets the value of the property on the instance.
         /// </summary>

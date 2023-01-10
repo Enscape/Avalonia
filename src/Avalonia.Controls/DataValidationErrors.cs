@@ -39,13 +39,12 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<DataValidationErrors, Control?> OwnerProperty =
             AvaloniaProperty.RegisterDirect<DataValidationErrors, Control?>(
                 nameof(Owner),
-                o => o.Owner,
-                (o, v) => o.Owner = v);
+                o => o.Owner);
 
         public Control? Owner
         {
             get { return _owner; }
-            set { SetAndRaise(OwnerProperty, ref _owner, value); }
+            private set { SetAndRaise(OwnerProperty, ref _owner, value); }
         }
 
         /// <summary>
@@ -60,10 +59,7 @@ namespace Avalonia.Controls
 
         private void OnTemplatedParentChange(AvaloniaPropertyChangedEventArgs e)
         {
-            if (Owner == null)
-            {
-                Owner = (e.NewValue as Control);
-            }
+            Owner ??= e.NewValue as Control;
         }
 
         public IDataTemplate ErrorTemplate

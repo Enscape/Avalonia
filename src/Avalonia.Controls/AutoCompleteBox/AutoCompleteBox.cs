@@ -94,8 +94,6 @@ namespace Avalonia.Controls
         /// </summary>
         private const string ElementTextBox = "PART_TextBox";
 
-        private IEnumerable? _itemsEnumerable;
-
         /// <summary>
         /// Gets or sets a local cached copy of the items data.
         /// </summary>
@@ -188,24 +186,14 @@ namespace Avalonia.Controls
         /// </summary>
         private IDisposable? _collectionChangeSubscription;
 
-        private Func<string?, CancellationToken, Task<IEnumerable<object>>>? _asyncPopulator;
         private CancellationTokenSource? _populationCancellationTokenSource;
 
         private bool _itemTemplateIsFromValueMemberBinding = true;
         private bool _settingItemTemplateFromValueMemberBinding;
 
-        private object? _selectedItem;
-        private bool _isDropDownOpen;
         private bool _isFocused = false;
 
-        private string? _text = string.Empty;
         private string? _searchText = string.Empty;
-
-        private AutoCompleteFilterPredicate<object?>? _itemFilter;
-        private AutoCompleteFilterPredicate<string?>? _textFilter = AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith);
-
-        private AutoCompleteSelector<object>? _itemSelector;
-        private AutoCompleteSelector<string?>? _textSelector;
 
         private readonly EventHandler _populateDropDownHandler;
 
@@ -1111,7 +1099,7 @@ namespace Avalonia.Controls
             _populationCancellationTokenSource?.Dispose();
             _populationCancellationTokenSource = null;
 
-            if(_asyncPopulator == null)
+            if(AsyncPopulator == null)
             {
                 return false;
             }
@@ -1128,7 +1116,7 @@ namespace Avalonia.Controls
 
             try
             {
-                IEnumerable<object> result = await _asyncPopulator!.Invoke(searchText, cancellationToken);
+                IEnumerable<object> result = await AsyncPopulator!.Invoke(searchText, cancellationToken);
                 var resultList = result.ToList();
 
                 if (cancellationToken.IsCancellationRequested)

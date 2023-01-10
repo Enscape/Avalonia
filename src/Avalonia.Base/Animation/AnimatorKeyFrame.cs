@@ -13,8 +13,7 @@ namespace Avalonia.Animation
     /// </summary>
     public class AnimatorKeyFrame : AvaloniaObject
     {
-        public static readonly DirectProperty<AnimatorKeyFrame, object?> ValueProperty =
-            AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object?>(nameof(Value), k => k.Value, (k, v) => k.Value = v);
+        public static readonly StyledProperty<object?> ValueProperty = AvaloniaProperty.Register<AnimatorKeyFrame, object?>(nameof(Value));
 
         public AnimatorKeyFrame()
         {
@@ -44,12 +43,10 @@ namespace Avalonia.Animation
         public KeySpline? KeySpline { get; }
         public AvaloniaProperty? Property { get; private set; }
 
-        private object? _value;
-
         public object? Value
         {
-            get => _value;
-            set => SetAndRaise(ValueProperty, ref _value, value);
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
         }
 
         public IDisposable BindSetter(IAnimationSetter setter, Animatable targetControl)

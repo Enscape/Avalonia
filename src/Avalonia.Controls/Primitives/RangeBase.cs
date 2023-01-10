@@ -12,30 +12,22 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Minimum"/> property.
         /// </summary>
-        public static readonly DirectProperty<RangeBase, double> MinimumProperty =
-            AvaloniaProperty.RegisterDirect<RangeBase, double>(
-                nameof(Minimum),
-                o => o.Minimum,
-                (o, v) => o.Minimum = v);
+        public static readonly StyledProperty<double> MinimumProperty =
+            AvaloniaProperty.Register<RangeBase, double>(nameof(Minimum), coerce: CoerceMinimum);
 
         /// <summary>
         /// Defines the <see cref="Maximum"/> property.
         /// </summary>
-        public static readonly DirectProperty<RangeBase, double> MaximumProperty =
-            AvaloniaProperty.RegisterDirect<RangeBase, double>(
-                nameof(Maximum),
-                o => o.Maximum,
-                (o, v) => o.Maximum = v);
+        public static readonly StyledProperty<double> MaximumProperty =
+            AvaloniaProperty.Register<RangeBase, double>(nameof(Maximum), 100, coerce: CoerceMaximum);
 
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
-        public static readonly DirectProperty<RangeBase, double> ValueProperty =
-            AvaloniaProperty.RegisterDirect<RangeBase, double>(
-                nameof(Value),
-                o => o.Value,
-                (o, v) => o.Value = v,
-                defaultBindingMode: BindingMode.TwoWay);
+        public static readonly StyledProperty<double> ValueProperty =
+            AvaloniaProperty.Register<RangeBase, double>(nameof(Value),
+                defaultBindingMode: BindingMode.TwoWay,
+                coerce: CoerceValue);
 
         /// <summary>
         /// Defines the <see cref="SmallChange"/> property.
@@ -49,10 +41,6 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<double> LargeChangeProperty =
             AvaloniaProperty.Register<RangeBase, double>(nameof(LargeChange), 10);
 
-        private double _minimum;
-        private double _maximum = 100.0;
-        private double _value;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RangeBase"/> class.
         /// </summary>
@@ -60,33 +48,39 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
+        static RangeBase()
+        {
+            MinimumProperty.Changed.AddClassHandler<RangeBase>((s, e) => s.OnMinimumChanged());
+            MaximumProperty.Changed.AddClassHandler<RangeBase>((s, e) => s.OnMaximumChanged());
+        }
+
         /// <summary>
         /// Gets or sets the minimum value.
         /// </summary>
         public double Minimum
         {
-            get
+            get => GetValue(MinimumProperty);
+            set => SetValue(MinimumProperty, value);
+        }
+
+        private static double CoerceMinimum(AvaloniaObject sender, double value)
+        {
+            var range = (RangeBase)sender;
+
+            if (!ValidateDouble(value))
             {
-                return _minimum;
+                return range.Minimum;
             }
 
-            set
-            {
-                if (!ValidateDouble(value))
-                {
-                    return;
-                }
+            return value;
+        }
 
-                if (IsInitialized)
-                {
-                    SetAndRaise(MinimumProperty, ref _minimum, value);
-                    Maximum = ValidateMaximum(Maximum);
-                    Value = ValidateValue(Value);
-                }
-                else
-                {
-                    SetAndRaise(MinimumProperty, ref _minimum, value);
-                }
+        private void OnMinimumChanged()
+        {
+            if (IsInitialized)
+            {
+                CoerceValue(MaximumProperty);
+                CoerceValue(ValueProperty);
             }
         }
 
@@ -95,28 +89,27 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public double Maximum
         {
-            get
+            get => GetValue(MaximumProperty);
+            set => SetValue(MaximumProperty, value);
+        }
+
+        private static double CoerceMaximum(AvaloniaObject sender, double value)
+        {
+            var range = (RangeBase)sender;
+
+            if (!ValidateDouble(value))
             {
-                return _maximum;
+                return range.Maximum;
             }
 
-            set
-            {
-                if (!ValidateDouble(value))
-                {
-                    return;
-                }
+            return range.ValidateMaximum(value);
+        }
 
-                if (IsInitialized)
-                {
-                    value = ValidateMaximum(value);
-                    SetAndRaise(MaximumProperty, ref _maximum, value);
-                    Value = ValidateValue(Value);
-                }
-                else
-                {
-                    SetAndRaise(MaximumProperty, ref _maximum, value);
-                }
+        private void OnMaximumChanged()
+        {
+            if (IsInitialized)
+            {
+                CoerceValue(ValueProperty);
             }
         }
 
@@ -125,28 +118,20 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public double Value
         {
-            get
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
+        }
+
+        private static double CoerceValue(AvaloniaObject sender, double value)
+        {
+            var range = (RangeBase)sender;
+
+            if (!ValidateDouble(value))
             {
-                return _value;
+                return range.Value;
             }
 
-            set
-            {
-                if (!ValidateDouble(value))
-                {
-                    return;
-                }
-
-                if (IsInitialized)
-                {
-                    value = ValidateValue(value);
-                    SetAndRaise(ValueProperty, ref _value, value);
-                }
-                else
-                {
-                    SetAndRaise(ValueProperty, ref _value, value);
-                }
-            }
+            return range.ValidateValue(value);
         }
 
         public double SmallChange

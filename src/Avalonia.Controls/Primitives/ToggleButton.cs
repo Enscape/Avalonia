@@ -15,12 +15,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="IsChecked"/> property.
         /// </summary>
-        public static readonly DirectProperty<ToggleButton, bool?> IsCheckedProperty =
-            AvaloniaProperty.RegisterDirect<ToggleButton, bool?>(
-                nameof(IsChecked),
-                o => o.IsChecked,
-                (o, v) => o.IsChecked = v,
-                unsetValue: null,
+        public static readonly StyledProperty<bool?> IsCheckedProperty =
+            AvaloniaProperty.Register<ToggleButton, bool?>(nameof(IsChecked), false,
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -46,8 +42,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> IndeterminateEvent =
             RoutedEvent.Register<ToggleButton, RoutedEventArgs>(nameof(Indeterminate), RoutingStrategies.Bubble);
-
-        private bool? _isChecked = false;
 
         static ToggleButton()
         {
@@ -91,12 +85,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool? IsChecked
         {
-            get => _isChecked;
-            set 
-            { 
-                SetAndRaise(IsCheckedProperty, ref _isChecked, value);
-                UpdatePseudoClasses(IsChecked);
-            }
+            get => GetValue(IsCheckedProperty);
+            set => SetValue(IsCheckedProperty, value);
         }
 
         /// <summary>
@@ -178,6 +168,8 @@ namespace Avalonia.Controls.Primitives
         private void OnIsCheckedChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var newValue = (bool?)e.NewValue;
+
+            UpdatePseudoClasses(newValue);
 
             switch (newValue)
             {

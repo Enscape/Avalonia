@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Avalonia.Reactive;
 using System.Threading.Tasks;
@@ -149,11 +148,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="WindowStartupLocation"/> property.
         /// </summary>
-        public static readonly DirectProperty<Window, WindowStartupLocation> WindowStartupLocationProperty =
-            AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(
-                nameof(WindowStartupLocation),
-                o => o.WindowStartupLocation,
-                (o, v) => o.WindowStartupLocation = v);
+        public static readonly StyledProperty<WindowStartupLocation> WindowStartupLocationProperty =
+            AvaloniaProperty.Register<Window, WindowStartupLocation>(nameof(WindowStartupLocation));
 
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
@@ -171,7 +167,6 @@ namespace Avalonia.Controls
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
         private object? _dialogResult;
         private readonly Size _maxPlatformClientSize;
-        private WindowStartupLocation _windowStartupLocation;
         private bool _shown;
         private bool _showingAsDialog;
 
@@ -305,7 +300,7 @@ namespace Avalonia.Controls
         {
             get => GetValue(ExtendClientAreaTitleBarHeightHintProperty);
             set => SetValue(ExtendClientAreaTitleBarHeightHintProperty, value);
-        }        
+        }
 
         /// <summary>
         /// Gets if the ClientArea is Extended into the Window Decorations.
@@ -314,7 +309,7 @@ namespace Avalonia.Controls
         {
             get => _isExtendedIntoWindowDecorations;
             private set => SetAndRaise(IsExtendedIntoWindowDecorationsProperty, ref _isExtendedIntoWindowDecorations, value);
-        }        
+        }
 
         /// <summary>
         /// Gets the WindowDecorationMargin.
@@ -324,7 +319,7 @@ namespace Avalonia.Controls
         {
             get => _windowDecorationMargin;
             private set => SetAndRaise(WindowDecorationMarginProperty, ref _windowDecorationMargin, value);
-        }        
+        }
 
         /// <summary>
         /// Gets the window margin that is hidden off the screen area.
@@ -397,8 +392,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowStartupLocation WindowStartupLocation
         {
-            get { return _windowStartupLocation; }
-            set { SetAndRaise(WindowStartupLocationProperty, ref _windowStartupLocation, value); }
+            get => GetValue(WindowStartupLocationProperty);
+            set => SetValue(WindowStartupLocationProperty, value);
         }
 
         /// <summary>
@@ -488,7 +483,7 @@ namespace Avalonia.Controls
                 CloseInternal();
                 return false;
             }
-            
+
             return true;
         }
 
@@ -657,7 +652,7 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("Cannot re-show a closed window.");
             }
         }
-        
+
         private void EnsureParentStateBeforeShow(Window owner)
         {
             if (owner.PlatformImpl == null)
@@ -880,7 +875,7 @@ namespace Avalonia.Controls
             var startupLocation = WindowStartupLocation;
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
-                (owner is null || 
+                (owner is null ||
                  (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
                 )
             {
@@ -902,7 +897,7 @@ namespace Avalonia.Controls
 
                 if (owner is not null)
                 {
-                    screen = Screens.ScreenFromWindow(owner) 
+                    screen = Screens.ScreenFromWindow(owner)
                              ?? Screens.ScreenFromPoint(owner.Position);
                 }
 

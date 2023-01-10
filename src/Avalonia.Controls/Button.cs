@@ -1,11 +1,9 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -48,9 +46,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<Button, ICommand?> CommandProperty =
-            AvaloniaProperty.RegisterDirect<Button, ICommand?>(nameof(Command),
-                button => button.Command, (button, command) => button.Command = command, enableDataValidation: true);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            AvaloniaProperty.Register<Button, ICommand?>(nameof(Command), enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -94,7 +91,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<FlyoutBase?> FlyoutProperty =
             AvaloniaProperty.Register<Button, FlyoutBase?>(nameof(Flyout));
 
-        private ICommand? _command;
         private bool _commandCanExecute = true;
         private KeyGesture? _hotkey;
         private bool _isFlyoutOpen = false;
@@ -138,8 +134,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand? Command
         {
-            get => _command;
-            set => SetAndRaise(CommandProperty, ref _command, value);
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>
@@ -291,16 +287,16 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Space:
-                {
-                    if (ClickMode == ClickMode.Press)
                     {
-                        OnClick();
-                    }
+                        if (ClickMode == ClickMode.Press)
+                        {
+                            OnClick();
+                        }
 
-                    IsPressed = true;
-                    e.Handled = true;
-                    break;
-                }
+                        IsPressed = true;
+                        e.Handled = true;
+                        break;
+                    }
 
                 case Key.Escape when Flyout != null:
                     // If Flyout doesn't have focusable content, close the flyout here
@@ -592,7 +588,7 @@ namespace Avalonia.Controls
             {
                 flyout.Opened -= Flyout_Opened;
                 flyout.Closed -= Flyout_Closed;
-             }
+            }
         }
 
         /// <summary>
@@ -671,7 +667,7 @@ namespace Avalonia.Controls
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
 
         void IClickableControl.RaiseClick() => OnClick();
-        
+
         /// <summary>
         /// Event handler for when the button's flyout is opened.
         /// </summary>

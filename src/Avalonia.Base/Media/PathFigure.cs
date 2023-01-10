@@ -23,11 +23,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Segments"/> property.
         /// </summary>
-        public static readonly DirectProperty<PathFigure, PathSegments?> SegmentsProperty
-            = AvaloniaProperty.RegisterDirect<PathFigure, PathSegments?>(
-                nameof(Segments), 
-                f => f.Segments,
-                (f, s) => f.Segments = s);
+        public static readonly StyledProperty<PathSegments?> SegmentsProperty
+            = AvaloniaProperty.Register<PathFigure, PathSegments?>(nameof(Segments));
 
         /// <summary>
         /// Defines the <see cref="StartPoint"/> property.
@@ -36,8 +33,6 @@ namespace Avalonia.Media
             = AvaloniaProperty.Register<PathFigure, Point>(nameof(StartPoint));
 
         internal event EventHandler? SegmentsInvalidated;
-
-        private PathSegments? _segments;
 
         private IDisposable? _segmentsDisposable;
 
@@ -63,12 +58,12 @@ namespace Avalonia.Media
             _segmentsDisposable?.Dispose();
             _segmentsPropertiesDisposable?.Dispose();
 
-            _segmentsDisposable = _segments?.ForEachItem(
+            _segmentsDisposable = Segments?.ForEachItem(
                 _ => InvalidateSegments(),
                 _ => InvalidateSegments(),
                 InvalidateSegments);
 
-            _segmentsPropertiesDisposable = _segments?.TrackItemPropertyChanged(_ => InvalidateSegments());
+            _segmentsPropertiesDisposable = Segments?.TrackItemPropertyChanged(_ => InvalidateSegments());
         }
 
         private void InvalidateSegments()
@@ -109,8 +104,8 @@ namespace Avalonia.Media
         [Content]
         public PathSegments? Segments
         {
-            get { return _segments; }
-            set { SetAndRaise(SegmentsProperty, ref _segments, value); }
+            get => GetValue(SegmentsProperty);
+            set => SetValue(SegmentsProperty, value);
         }
 
         /// <summary>
@@ -126,7 +121,7 @@ namespace Avalonia.Media
         }
         
         public override string ToString()
-            => FormattableString.Invariant($"M {StartPoint} {string.Join(" ", _segments ?? Enumerable.Empty<PathSegment>())}{(IsClosed ? "Z" : "")}");
+            => FormattableString.Invariant($"M {StartPoint} {string.Join(" ", Segments ?? Enumerable.Empty<PathSegment>())}{(IsClosed ? "Z" : "")}");
 
         internal void ApplyTo(StreamGeometryContext ctx)
         {

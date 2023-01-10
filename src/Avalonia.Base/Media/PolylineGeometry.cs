@@ -14,8 +14,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Points"/> property.
         /// </summary>
-        public static readonly DirectProperty<PolylineGeometry, Points> PointsProperty =
-            AvaloniaProperty.RegisterDirect<PolylineGeometry, Points>(nameof(Points), g => g.Points, (g, f) => g.Points = f);
+        public static readonly StyledProperty<Points> PointsProperty =
+            AvaloniaProperty.Register<PolylineGeometry, Points>(nameof(Points));
 
         /// <summary>
         /// Defines the <see cref="IsFilled"/> property.
@@ -23,7 +23,6 @@ namespace Avalonia.Media
         public static readonly StyledProperty<bool> IsFilledProperty =
             AvaloniaProperty.Register<PolylineGeometry, bool>(nameof(IsFilled));
 
-        private Points _points;
         private IDisposable? _pointsObserver;
 
         static PolylineGeometry()
@@ -37,7 +36,7 @@ namespace Avalonia.Media
         /// </summary>
         public PolylineGeometry()
         {
-            _points = new Points();
+            Points = new Points();
         }
 
         /// <summary>
@@ -58,8 +57,8 @@ namespace Avalonia.Media
         [Content]
         public Points Points
         {
-            get => _points;
-            set => SetAndRaise(PointsProperty, ref _points, value);
+            get => GetValue(PointsProperty);
+            set => SetValue(PointsProperty, value);
         }
 
         public bool IsFilled

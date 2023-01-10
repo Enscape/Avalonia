@@ -22,11 +22,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
-        public static readonly DirectProperty<TreeViewItem, bool> IsExpandedProperty =
-            AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
-                nameof(IsExpanded),
-                o => o.IsExpanded,
-                (o, v) => o.IsExpanded = v);
+        public static readonly StyledProperty<bool> IsExpandedProperty =
+            AvaloniaProperty.Register<TreeViewItem, bool>(nameof(IsExpanded));
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -46,7 +43,6 @@ namespace Avalonia.Controls
 
         private TreeView? _treeView;
         private Control? _header;
-        private bool _isExpanded;
         private int _level;
         private bool _templateApplied;
         private bool _deferredBringIntoViewFlag;
@@ -69,8 +65,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsExpanded
         {
-            get { return _isExpanded; }
-            set { SetAndRaise(IsExpandedProperty, ref _isExpanded, value); }
+            get => GetValue(IsExpandedProperty);
+            set => SetValue(IsExpandedProperty, value);
         }
 
         /// <summary>

@@ -225,8 +225,9 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-         /// <param name="validate">A value validation callback.</param>
+        /// <param name="validate">A value validation callback.</param>
         /// <param name="coerce">A value coercion callback.</param>
+        /// <param name="enableDataValidation">Whether the property is interested in data validation.</param>
         /// <param name="notifying">
         /// A method that gets called before and after the property starts being notified on an
         /// object; the bool argument will be true before and false afterwards. This callback is
@@ -240,7 +241,8 @@ namespace Avalonia
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
             Func<AvaloniaObject, TValue, TValue>? coerce = null,
-            Action<AvaloniaObject, bool>? notifying = null)
+            Action<AvaloniaObject, bool>? notifying = null,
+            bool enableDataValidation = false)
                 where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
@@ -248,7 +250,8 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 defaultBindingMode: defaultBindingMode,
-                coerce: coerce);
+                coerce: coerce,
+                enableDataValidation: enableDataValidation);
 
             var result = new StyledProperty<TValue>(
                 name,
@@ -341,7 +344,6 @@ namespace Avalonia
         /// <typeparam name="TValue">The type of the property's value.</typeparam>
         /// <param name="name">The name of the property.</param>
         /// <param name="getter">Gets the current value of the property.</param>
-        /// <param name="setter">Sets the value of the property.</param>
         /// <param name="unsetValue">The value to use when the property is cleared.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="enableDataValidation">
@@ -351,7 +353,6 @@ namespace Avalonia
         public static DirectProperty<TOwner, TValue> RegisterDirect<TOwner, TValue>(
             string name,
             Func<TOwner, TValue> getter,
-            Action<TOwner, TValue>? setter = null,
             TValue unsetValue = default!,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             bool enableDataValidation = false)
@@ -368,7 +369,6 @@ namespace Avalonia
             var result = new DirectProperty<TOwner, TValue>(
                 name,
                 getter,
-                setter,
                 metadata);
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;

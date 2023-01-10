@@ -47,8 +47,7 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="Name"/> property.
         /// </summary>
-        public static readonly DirectProperty<StyledElement, string?> NameProperty =
-            AvaloniaProperty.RegisterDirect<StyledElement, string?>(nameof(Name), o => o.Name, (o, v) => o.Name = v);
+        public static readonly StyledProperty<string?> NameProperty = AvaloniaProperty.Register<StyledElement, string?>(nameof(Name), coerce: CoerceName);
         
         /// <summary>
         /// Defines the <see cref="Parent"/> property.
@@ -60,10 +59,7 @@ namespace Avalonia
         /// Defines the <see cref="TemplatedParent"/> property.
         /// </summary>
         public static readonly DirectProperty<StyledElement, AvaloniaObject?> TemplatedParentProperty =
-            AvaloniaProperty.RegisterDirect<StyledElement, AvaloniaObject?>(
-                nameof(TemplatedParent),
-                o => o.TemplatedParent,
-                (o ,v) => o.TemplatedParent = v);
+            AvaloniaProperty.RegisterDirect<StyledElement, AvaloniaObject?>(nameof(TemplatedParent), o => o.TemplatedParent);
         
         /// <summary>
         /// Defines the <see cref="Theme"/> property.
@@ -73,7 +69,6 @@ namespace Avalonia
 
         private static readonly ControlTheme s_invalidTheme = new ControlTheme();
         private int _initCount;
-        private string? _name;
         private readonly Classes _classes = new Classes();
         private ILogicalRoot? _logicalRoot;
         private IAvaloniaList<ILogical>? _logicalChildren;
@@ -148,17 +143,18 @@ namespace Avalonia
         /// </remarks>
         public string? Name
         {
-            get => _name;
+            get => GetValue(NameProperty);
+            set => SetValue(NameProperty, value);
+        }
 
-            set
+        private static string? CoerceName(AvaloniaObject sender, string? baseValue)
+        {
+            if (((StyledElement)sender)._stylesApplied)
             {
-                if (_stylesApplied)
-                {
-                    throw new InvalidOperationException("Cannot set Name : styled element already styled.");
-                }
-
-                _name = value;
+                throw new InvalidOperationException("Cannot set Name : styled element already styled.");
             }
+
+            return baseValue;
         }
 
         /// <summary>

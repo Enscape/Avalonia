@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
-using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using System;
@@ -30,23 +29,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="MinuteIncrement"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePicker, int> MinuteIncrementProperty =
-            AvaloniaProperty.RegisterDirect<TimePicker, int>(nameof(MinuteIncrement),
-                x => x.MinuteIncrement, (x, v) => x.MinuteIncrement = v);
+        public static readonly StyledProperty<int> MinuteIncrementProperty =
+            AvaloniaProperty.Register<TimePicker, int>(nameof(MinuteIncrement), 1, coerce: CoerceMinuteIncrement);
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePicker, string> ClockIdentifierProperty =
-           AvaloniaProperty.RegisterDirect<TimePicker, string>(nameof(ClockIdentifier),
-               x => x.ClockIdentifier, (x, v) => x.ClockIdentifier = v);
+        public static readonly StyledProperty<string> ClockIdentifierProperty =
+           AvaloniaProperty.Register<TimePicker, string>(nameof(ClockIdentifier), "12HourClock", coerce: CoerceClockIdentifier);
 
         /// <summary>
         /// Defines the <see cref="SelectedTime"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePicker, TimeSpan?> SelectedTimeProperty =
-            AvaloniaProperty.RegisterDirect<TimePicker, TimeSpan?>(nameof(SelectedTime),
-                x => x.SelectedTime, (x, v) => x.SelectedTime = v,
+        public static readonly StyledProperty<TimeSpan?> SelectedTimeProperty =
+            AvaloniaProperty.Register<TimePicker, TimeSpan?>(nameof(SelectedTime),
                 defaultBindingMode: BindingMode.TwoWay);
 
         // Template Items
@@ -63,17 +59,29 @@ namespace Avalonia.Controls
         private Grid? _contentGrid;
         private Popup? _popup;
 
-        private TimeSpan? _selectedTime;
-        private int _minuteIncrement = 1;
-        private string _clockIdentifier = "12HourClock";
-
         public TimePicker()
         {
             PseudoClasses.Set(":hasnotime", true);
 
             var timePattern = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern;
             if (timePattern.IndexOf("H") != -1)
-                _clockIdentifier = "24HourClock";
+                ClockIdentifier = "24HourClock";
+        }
+
+        static TimePicker()
+        {
+            MinuteIncrementProperty.Changed.AddClassHandler<TimePicker>((s, e) => s.SetSelectedTimeText());
+
+            ClockIdentifierProperty.Changed.AddClassHandler<TimePicker>((s, e) =>
+            {
+                s.SetGrid();
+                s.SetSelectedTimeText();
+            });
+
+            SelectedTimeProperty.Changed.AddClassHandler<TimePicker, TimeSpan?>((s, e) => {
+                s.OnSelectedTimeChanged(e.OldValue.Value, e.NewValue.Value);
+                s.SetSelectedTimeText();
+            });
         }
 
         /// <summary>
@@ -81,14 +89,16 @@ namespace Avalonia.Controls
         /// </summary>
         public int MinuteIncrement
         {
-            get => _minuteIncrement;
-            set
-            {
-                if (value < 1 || value > 59)
-                    throw new ArgumentOutOfRangeException("1 >= MinuteIncrement <= 59");
-                SetAndRaise(MinuteIncrementProperty, ref _minuteIncrement, value);
-                SetSelectedTimeText();
-            }
+            get => GetValue(MinuteIncrementProperty);
+            set => SetValue(MinuteIncrementProperty, value);
+        }
+
+        private static int CoerceMinuteIncrement(AvaloniaObject sender, int value)
+        {
+            if (value < 1 || value > 59)
+                throw new ArgumentOutOfRangeException(null, "1 >= MinuteIncrement <= 59");
+
+            return value;
         }
 
         /// <summary>
@@ -96,15 +106,17 @@ namespace Avalonia.Controls
         /// </summary>
         public string ClockIdentifier
         {
-            get => _clockIdentifier;
-            set
-            {
-                if (!(string.IsNullOrEmpty(value) || value == "12HourClock" || value == "24HourClock"))
-                    throw new ArgumentException("Invalid ClockIdentifier");
-                SetAndRaise(ClockIdentifierProperty, ref _clockIdentifier, value);
-                SetGrid();
-                SetSelectedTimeText();
-            }
+
+            get => GetValue(ClockIdentifierProperty);
+            set => SetValue(ClockIdentifierProperty, value);
+        }
+
+        private static string CoerceClockIdentifier(AvaloniaObject sender, string value)
+        {
+            if (!(string.IsNullOrEmpty(value) || value == "12HourClock" || value == "24HourClock"))
+                throw new ArgumentException("Invalid ClockIdentifier", default(string));
+
+            return value;
         }
 
         /// <summary>
@@ -112,14 +124,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TimeSpan? SelectedTime
         {
-            get => _selectedTime;
-            set
-            {
-                var old = _selectedTime;
-                SetAndRaise(SelectedTimeProperty, ref _selectedTime, value);
-                OnSelectedTimeChanged(old, value);
-                SetSelectedTimeText();
-            }
+            get => GetValue(SelectedTimeProperty);
+            set => SetValue(SelectedTimeProperty, value);
         }
 
         /// <summary>

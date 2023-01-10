@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -103,11 +103,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
-        public static readonly DirectProperty<TextBlock, string?> TextProperty =
-            AvaloniaProperty.RegisterDirect<TextBlock, string?>(
-                nameof(Text),
-                o => o.GetText(),
-                (o, v) => o.SetText(v));
+        public static readonly StyledProperty<string?> TextProperty =
+            AvaloniaProperty.Register<TextBlock, string?>(nameof(Text), coerce: CoerceText);
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
@@ -146,7 +143,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBlock, InlineCollection?>(
                 nameof(Inlines));
 
-        internal string? _text;
         protected TextLayout? _textLayout;
         protected Size _constraint;
         private IReadOnlyList<TextRun>? _textRuns;
@@ -177,7 +173,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                return _textLayout ??= CreateTextLayout(_text);
+                return _textLayout ??= CreateTextLayout(Text);
             }
         }
 
@@ -202,11 +198,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
+        [DebuggerDisplay("{DebugText}")]
         public string? Text
         {
-            get => GetText();
-            set => SetText(value);
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
+
+        private string DebugText => Text ?? Inlines?.Text;
 
         /// <summary>
         /// Gets or sets the font family used to draw the control's text.
@@ -590,21 +589,32 @@ namespace Avalonia.Controls
             TextLayout.Draw(context, origin);
         }
 
-        protected virtual string? GetText()
+        private bool _suppressTextCoerce;
+        internal void ClearTextInternal()
         {
-            return _text ?? Inlines?.Text;
-        }
-
-        protected virtual void SetText(string? text)
-        {
-            if (HasComplexContent)
+            _suppressTextCoerce = true;
+            try
             {
-                Inlines?.Clear();
+                Text = null;
             }
-           
-            SetAndRaise(TextProperty, ref _text, text);           
+            finally
+            {
+                _suppressTextCoerce = false;
+            }
         }
 
+        private static string? CoerceText(AvaloniaObject sender, string? value)
+        {
+            var textBlock = (TextBlock)sender;
+            
+            if (!textBlock._suppressTextCoerce && textBlock.HasComplexContent)
+            {
+                textBlock.Inlines?.Clear();
+            }
+
+            return value;
+        }
+                
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>

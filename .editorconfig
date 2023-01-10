@@ -55,12 +55,24 @@ dotnet_naming_symbols.constant_fields.required_modifiers = const
 
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
+# static readonly fields
+dotnet_naming_rule.public_static_fields_camelcase.severity = suggestion
+dotnet_naming_rule.public_static_fields_camelcase.symbols  = public_static_fields
+dotnet_naming_rule.public_static_fields_camelcase.style    = public_static_style
+
+dotnet_naming_symbols.public_static_fields.applicable_kinds   = field
+dotnet_naming_symbols.public_static_fields.applicable_accessibilities = public, internal
+dotnet_naming_symbols.public_static_fields.required_modifiers = static
+
+dotnet_naming_style.public_static_style.capitalization = pascal_case
+
 # static fields should have s_ prefix
 dotnet_naming_rule.static_fields_should_have_prefix.severity = suggestion
 dotnet_naming_rule.static_fields_should_have_prefix.symbols  = static_fields
 dotnet_naming_rule.static_fields_should_have_prefix.style    = static_prefix_style
 
 dotnet_naming_symbols.static_fields.applicable_kinds   = field
+dotnet_naming_symbols.static_fields.applicable_accessibilities = protected, private
 dotnet_naming_symbols.static_fields.required_modifiers = static
 
 dotnet_naming_style.static_prefix_style.required_prefix = s_

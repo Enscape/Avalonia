@@ -26,11 +26,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Owner"/> property.
         /// </summary>
-        public static readonly DirectProperty<WindowBase, WindowBase?> OwnerProperty =
-            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase?>(
-                nameof(Owner),
-                o => o.Owner,
-                (o, v) => o.Owner = v);
+        public static readonly StyledProperty<WindowBase?> OwnerProperty =
+            AvaloniaProperty.Register<WindowBase, WindowBase?>(nameof(Owner));
 
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<WindowBase, bool>(nameof(Topmost));
@@ -38,7 +35,6 @@ namespace Avalonia.Controls
         private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
         private int _ignoreVisibilityChanges;
-        private WindowBase? _owner;
 
         protected bool IgnoreVisibilityChanges => _ignoreVisibilityChanges > 0; 
 
@@ -101,8 +97,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowBase? Owner
         {
-            get { return _owner; }
-            protected set { SetAndRaise(OwnerProperty, ref _owner, value); }
+            get => GetValue(OwnerProperty);
+            set => SetValue(OwnerProperty, value);
         }
 
         /// <summary>

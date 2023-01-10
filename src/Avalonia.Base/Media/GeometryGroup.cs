@@ -10,20 +10,15 @@ namespace Avalonia.Media
     /// </summary>
     public class GeometryGroup : Geometry
     {
-        public static readonly DirectProperty<GeometryGroup, GeometryCollection> ChildrenProperty =
-            AvaloniaProperty.RegisterDirect<GeometryGroup, GeometryCollection> (
-                nameof(Children),
-                o => o.Children,
-                (o, v)=> o.Children = v);
+        public static readonly StyledProperty<GeometryCollection> ChildrenProperty = 
+            AvaloniaProperty.Register<GeometryGroup, GeometryCollection>(nameof(Children));
 
         public static readonly StyledProperty<FillRule> FillRuleProperty =
             AvaloniaProperty.Register<GeometryGroup, FillRule>(nameof(FillRule));
 
-        private GeometryCollection _children;
-
         public GeometryGroup()
         {
-            _children = new GeometryCollection
+            Children = new GeometryCollection
             {
                 Parent = this
             };
@@ -35,12 +30,8 @@ namespace Avalonia.Media
         [Content]
         public GeometryCollection Children
         {
-            get => _children;
-            set
-            {
-                OnChildrenChanged(_children, value);
-                SetAndRaise(ChildrenProperty, ref _children, value);             
-            }
+            get => GetValue(ChildrenProperty);
+            set => SetValue(ChildrenProperty, value);
         }
 
         /// <summary>
@@ -57,9 +48,9 @@ namespace Avalonia.Media
         {
             var result = new GeometryGroup { FillRule = FillRule, Transform = Transform };
 
-            if (_children.Count > 0)
+            if (Children.Count > 0)
             {
-                result.Children = new GeometryCollection(_children);
+                result.Children = new GeometryCollection(Children);
             }
               
             return result;
@@ -74,11 +65,11 @@ namespace Avalonia.Media
 
         protected override IGeometryImpl? CreateDefiningGeometry()
         {
-            if (_children.Count > 0)
+            if (Children.Count > 0)
             {
                 var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
-                return factory.CreateGeometryGroup(FillRule, _children);
+                return factory.CreateGeometryGroup(FillRule, Children);
             }
 
             return null;

@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using Avalonia.Reactive;
 using Avalonia.Automation.Peers;
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -40,11 +39,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
-        public static readonly DirectProperty<Popup, bool> IsOpenProperty =
-            AvaloniaProperty.RegisterDirect<Popup, bool>(
-                nameof(IsOpen),
-                o => o.IsOpen,
-                (o, v) => o.IsOpen = v);
+        public static readonly StyledProperty<bool> IsOpenProperty =
+            AvaloniaProperty.Register<Popup, bool>(nameof(IsOpen));
 
         /// <summary>
         /// Defines the <see cref="PlacementAnchor"/> property.
@@ -89,11 +85,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(OverlayDismissEventPassThrough));
 
-        public static readonly DirectProperty<Popup, IInputElement?> OverlayInputPassThroughElementProperty =
-            AvaloniaProperty.RegisterDirect<Popup, IInputElement?>(
-                nameof(OverlayInputPassThroughElement),
-                o => o.OverlayInputPassThroughElement,
-                (o, v) => o.OverlayInputPassThroughElement = v);
+        public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
+            AvaloniaProperty.Register<Popup, IInputElement?>(nameof(OverlayInputPassThroughElement));
 
         /// <summary>
         /// Defines the <see cref="HorizontalOffset"/> property.
@@ -120,10 +113,8 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
 
         private bool _isOpenRequested = false;
-        private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
-        private IInputElement? _overlayInputPassThroughElement;
         private Action<IPopupHost?>? _popupHostChangedHandler;
 
         /// <summary>
@@ -208,8 +199,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool IsOpen
         {
-            get { return _isOpen; }
-            set { SetAndRaise(IsOpenProperty, ref _isOpen, value); }
+            get => GetValue(IsOpenProperty);
+            set => SetValue(IsOpenProperty, value);
         }
 
         /// <summary>
@@ -300,8 +291,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public IInputElement? OverlayInputPassThroughElement
         {
-            get => _overlayInputPassThroughElement;
-            set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
+            get => GetValue(OverlayInputPassThroughElementProperty);
+            set => SetValue(OverlayInputPassThroughElementProperty, value);
         }
 
         /// <summary>

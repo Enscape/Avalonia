@@ -91,11 +91,10 @@ namespace Avalonia.Controls.Documents
 
         public override void Add(Inline inline)
         {
-            if (InlineHost is TextBlock textBlock && !string.IsNullOrEmpty(textBlock._text))
-            {          
-                base.Add(new Run(textBlock._text));
-
-                textBlock._text = null;                
+            if (InlineHost is TextBlock textBlock && !string.IsNullOrEmpty(textBlock.Text))
+            {
+                base.Add(new Run(textBlock.Text));
+                textBlock.ClearTextInternal();
             }
 
             base.Add(inline);
@@ -111,9 +110,10 @@ namespace Avalonia.Controls.Documents
         /// <param name="text">The to be added text.</param>
         public void Add(string text)
         {
-            if (InlineHost is TextBlock textBlock && !textBlock.HasComplexContent)
+            var textBlock = InlineHost as TextBlock;
+            if (textBlock?.HasComplexContent == false)
             {
-                textBlock._text += text;
+                textBlock.Text += text;
             }
             else
             {

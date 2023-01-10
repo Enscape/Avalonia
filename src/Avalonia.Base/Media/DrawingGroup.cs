@@ -22,13 +22,8 @@ namespace Avalonia.Media
         public static readonly StyledProperty<IBrush> OpacityMaskProperty =
             AvaloniaProperty.Register<DrawingGroup, IBrush>(nameof(OpacityMask));
 
-        public static readonly DirectProperty<DrawingGroup, DrawingCollection> ChildrenProperty =
-            AvaloniaProperty.RegisterDirect<DrawingGroup, DrawingCollection>(
-                nameof(Children),
-                o => o.Children,
-                (o, v) => o.Children = v);
-
-        private DrawingCollection _children = new DrawingCollection();
+        public static readonly StyledProperty<DrawingCollection> ChildrenProperty =
+            AvaloniaProperty.Register<DrawingGroup, DrawingCollection>(nameof(Children));
 
         public double Opacity
         {
@@ -60,11 +55,13 @@ namespace Avalonia.Media
         [Content]
         public DrawingCollection Children
         {
-            get => _children;
-            set
-            {
-                SetAndRaise(ChildrenProperty, ref _children, value);
-            }
+            get => GetValue(ChildrenProperty);
+            set => SetValue(ChildrenProperty, value);
+        }
+
+        public DrawingGroup()
+        {
+            Children = new DrawingCollection();
         }
 
         public DrawingContext Open()

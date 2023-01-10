@@ -11,8 +11,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Figures"/> property.
         /// </summary>
-        public static readonly DirectProperty<PathGeometry, PathFigures?> FiguresProperty =
-            AvaloniaProperty.RegisterDirect<PathGeometry, PathFigures?>(nameof(Figures), g => g.Figures, (g, f) => g.Figures = f);
+        public static readonly StyledProperty<PathFigures?> FiguresProperty =
+            AvaloniaProperty.Register<PathGeometry, PathFigures?>(nameof(Figures));
 
         /// <summary>
         /// Defines the <see cref="FillRule"/> property.
@@ -20,7 +20,6 @@ namespace Avalonia.Media
         public static readonly StyledProperty<FillRule> FillRuleProperty =
                                  AvaloniaProperty.Register<PathGeometry, FillRule>(nameof(FillRule));
 
-        private PathFigures? _figures;
         private IDisposable? _figuresObserver;
         private IDisposable? _figuresPropertiesObserver;
 
@@ -35,7 +34,7 @@ namespace Avalonia.Media
         /// </summary>
         public PathGeometry()
         {
-            _figures = new PathFigures();
+            Figures = new PathFigures();
         }
 
         /// <summary>
@@ -65,8 +64,8 @@ namespace Avalonia.Media
         [Content]
         public PathFigures? Figures
         {
-            get { return _figures; }
-            set { SetAndRaise(FiguresProperty, ref _figures, value); }
+            get => GetValue(FiguresProperty);
+            set => SetValue(FiguresProperty, value);
         }
 
         /// <summary>
@@ -132,7 +131,7 @@ namespace Avalonia.Media
 
         public override string ToString()
         {
-            var figuresString = _figures is not null ? string.Join(" ", _figures) : string.Empty;
+            var figuresString = Figures is not null ? string.Join(" ", Figures) : string.Empty;
             return FormattableString.Invariant($"{(FillRule != FillRule.EvenOdd ? "F1 " : "")}{figuresString}");
         }
     }

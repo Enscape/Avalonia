@@ -21,92 +21,51 @@ namespace Avalonia.Animation
         /// <summary>
         /// Defines the <see cref="Duration"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animation, TimeSpan> DurationProperty =
-            AvaloniaProperty.RegisterDirect<Animation, TimeSpan>(
-                nameof(Duration),
-                o => o._duration,
-                (o, v) => o._duration = v);
+        public static readonly StyledProperty<TimeSpan> DurationProperty = AvaloniaProperty.Register<Animation, TimeSpan>(nameof(Duration));
 
         /// <summary>
         /// Defines the <see cref="IterationCount"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animation, IterationCount> IterationCountProperty =
-            AvaloniaProperty.RegisterDirect<Animation, IterationCount>(
-                nameof(IterationCount),
-                o => o._iterationCount,
-                (o, v) => o._iterationCount = v);
+        public static readonly StyledProperty<IterationCount> IterationCountProperty = AvaloniaProperty.Register<Animation, IterationCount>(nameof(IterationCount), new(1));
 
         /// <summary>
         /// Defines the <see cref="PlaybackDirection"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animation, PlaybackDirection> PlaybackDirectionProperty =
-            AvaloniaProperty.RegisterDirect<Animation, PlaybackDirection>(
-                nameof(PlaybackDirection),
-                o => o._playbackDirection,
-                (o, v) => o._playbackDirection = v);
+        public static readonly StyledProperty<PlaybackDirection> PlaybackDirectionProperty =
+            AvaloniaProperty.Register<Animation, PlaybackDirection>(nameof(PlaybackDirection));
 
         /// <summary>
         /// Defines the <see cref="FillMode"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animation, FillMode> FillModeProperty =
-            AvaloniaProperty.RegisterDirect<Animation, FillMode>(
-                nameof(FillMode),
-                o => o._fillMode,
-                (o, v) => o._fillMode = v);
+        public static readonly StyledProperty<FillMode> FillModeProperty = AvaloniaProperty.Register<Animation, FillMode>(nameof(FillMode));
 
         /// <summary>
         /// Defines the <see cref="Easing"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animation, Easing> EasingProperty =
-            AvaloniaProperty.RegisterDirect<Animation, Easing>(
-                nameof(Easing),
-                o => o._easing,
-                (o, v) => o._easing = v);
+        public static readonly StyledProperty<Easing> EasingProperty = AvaloniaProperty.Register<Animation, Easing>(nameof(Easing), new LinearEasing());
 
         /// <summary>
         /// Defines the <see cref="Delay"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animation, TimeSpan> DelayProperty =
-            AvaloniaProperty.RegisterDirect<Animation, TimeSpan>(
-                nameof(Delay),
-                o => o._delay,
-                (o, v) => o._delay = v);
+        public static readonly StyledProperty<TimeSpan> DelayProperty = AvaloniaProperty.Register<Animation, TimeSpan>(nameof(Delay));
 
         /// <summary>
         /// Defines the <see cref="DelayBetweenIterations"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animation, TimeSpan> DelayBetweenIterationsProperty =
-            AvaloniaProperty.RegisterDirect<Animation, TimeSpan>(
-                nameof(DelayBetweenIterations),
-                o => o._delayBetweenIterations,
-                (o, v) => o._delayBetweenIterations = v);
+        public static readonly StyledProperty<TimeSpan> DelayBetweenIterationsProperty = AvaloniaProperty.Register<Animation, TimeSpan>(nameof(DelayBetweenIterations));
 
         /// <summary>
         /// Defines the <see cref="SpeedRatio"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animation, double> SpeedRatioProperty =
-            AvaloniaProperty.RegisterDirect<Animation, double>(
-                nameof(SpeedRatio),
-                o => o._speedRatio,
-                (o, v) => o._speedRatio = v,
-                defaultBindingMode: BindingMode.TwoWay);
-
-        private TimeSpan _duration;
-        private IterationCount _iterationCount = new IterationCount(1);
-        private PlaybackDirection _playbackDirection;
-        private FillMode _fillMode;
-        private Easing _easing = new LinearEasing();
-        private TimeSpan _delay = TimeSpan.Zero;
-        private TimeSpan _delayBetweenIterations = TimeSpan.Zero;
-        private double _speedRatio = 1d;
+        public static readonly StyledProperty<double> SpeedRatioProperty = AvaloniaProperty.Register<Animation, double>(nameof(SpeedRatio), 1d, defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Gets or sets the active time of this animation.
         /// </summary>
         public TimeSpan Duration
         {
-            get { return _duration; }
-            set { SetAndRaise(DurationProperty, ref _duration, value); }
+            get => GetValue(DurationProperty);
+            set => SetValue(DurationProperty, value);
         }
 
         /// <summary>
@@ -114,8 +73,8 @@ namespace Avalonia.Animation
         /// </summary>
         public IterationCount IterationCount
         {
-            get { return _iterationCount; }
-            set { SetAndRaise(IterationCountProperty, ref _iterationCount, value); }
+            get => GetValue(IterationCountProperty);
+            set => SetValue(IterationCountProperty, value);
         }
 
         /// <summary>
@@ -123,8 +82,8 @@ namespace Avalonia.Animation
         /// </summary>
         public PlaybackDirection PlaybackDirection
         {
-            get { return _playbackDirection; }
-            set { SetAndRaise(PlaybackDirectionProperty, ref _playbackDirection, value); }
+            get => GetValue(PlaybackDirectionProperty);
+            set => SetValue(PlaybackDirectionProperty, value);
         }
 
         /// <summary>
@@ -132,8 +91,8 @@ namespace Avalonia.Animation
         /// </summary> 
         public FillMode FillMode
         {
-            get { return _fillMode; }
-            set { SetAndRaise(FillModeProperty, ref _fillMode, value); }
+            get => GetValue(FillModeProperty);
+            set => SetValue(FillModeProperty, value);
         }
 
         /// <summary>
@@ -141,8 +100,8 @@ namespace Avalonia.Animation
         /// </summary>
         public Easing Easing
         {
-            get { return _easing; }
-            set { SetAndRaise(EasingProperty, ref _easing, value); }
+            get => GetValue(EasingProperty);
+            set => SetValue(EasingProperty, value);
         }
 
         /// <summary> 
@@ -150,8 +109,8 @@ namespace Avalonia.Animation
         /// </summary> 
         public TimeSpan Delay
         {
-            get { return _delay; }
-            set { SetAndRaise(DelayProperty, ref _delay, value); }
+            get => GetValue(DelayProperty);
+            set => SetValue(DelayProperty, value);
         }
 
         /// <summary> 
@@ -159,8 +118,8 @@ namespace Avalonia.Animation
         /// </summary> 
         public TimeSpan DelayBetweenIterations
         {
-            get { return _delayBetweenIterations; }
-            set { SetAndRaise(DelayBetweenIterationsProperty, ref _delayBetweenIterations, value); }
+            get => GetValue(DelayBetweenIterationsProperty);
+            set => SetValue(DelayBetweenIterationsProperty, value);
         }
 
         /// <summary>
@@ -168,8 +127,8 @@ namespace Avalonia.Animation
         /// </summary> 
         public double SpeedRatio
         {
-            get { return _speedRatio; }
-            set { SetAndRaise(SpeedRatioProperty, ref _speedRatio, value); }
+            get => GetValue(SpeedRatioProperty);
+            set => SetValue(SpeedRatioProperty, value);
         }
 
         /// <summary>
