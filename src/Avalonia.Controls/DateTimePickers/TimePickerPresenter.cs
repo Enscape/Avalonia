@@ -30,29 +30,36 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="MinuteIncrement"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePickerPresenter, int> MinuteIncrementProperty =
-            TimePicker.MinuteIncrementProperty.AddOwner<TimePickerPresenter>(x => x.MinuteIncrement,
-                (x, v) => x.MinuteIncrement = v);
+        public static readonly StyledProperty<int> MinuteIncrementProperty =
+            TimePicker.MinuteIncrementProperty.AddOwner<TimePickerPresenter>();
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePickerPresenter, string> ClockIdentifierProperty =
-            TimePicker.ClockIdentifierProperty.AddOwner<TimePickerPresenter>(x => x.ClockIdentifier,
-                (x, v) => x.ClockIdentifier = v);
+        public static readonly StyledProperty<string> ClockIdentifierProperty =
+            TimePicker.ClockIdentifierProperty.AddOwner<TimePickerPresenter>();
 
         /// <summary>
         /// Defines the <see cref="Time"/> property
         /// </summary>
-        public static readonly DirectProperty<TimePickerPresenter, TimeSpan> TimeProperty =
-            AvaloniaProperty.RegisterDirect<TimePickerPresenter, TimeSpan>(nameof(Time),
-                x => x.Time, (x, v) => x.Time = v);
+        public static readonly StyledProperty<TimeSpan> TimeProperty =
+            AvaloniaProperty.Register<TimePickerPresenter, TimeSpan>(nameof(Time));
 
         public TimePickerPresenter()
         {
             Time = DateTime.Now.TimeOfDay;
-            KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
         }
+
+        static TimePickerPresenter()
+        {
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TimePickerPresenter>(KeyboardNavigationMode.Cycle);
+
+            MinuteIncrementProperty.Changed.AddClassHandler<TimePickerPresenter>(OnTimePropertyChanged);
+            ClockIdentifierProperty.Changed.AddClassHandler<TimePickerPresenter>(OnTimePropertyChanged);
+            TimeProperty.Changed.AddClassHandler<TimePickerPresenter>(OnTimePropertyChanged);
+        }
+
+        private static void OnTimePropertyChanged(TimePickerPresenter sender, AvaloniaPropertyChangedEventArgs e) => sender.InitPicker();
 
         // TemplateItems
         private Grid? _pickerContainer;
@@ -70,24 +77,13 @@ namespace Avalonia.Controls
         private Button? _minuteDownButton;
         private Button? _periodDownButton;
 
-        // Backing Fields
-        private TimeSpan _time;
-        private int _minuteIncrement = 1;
-        private string _clockIdentifier = "12HourClock";
-
         /// <summary>
         /// Gets or sets the minute increment in the selector
         /// </summary>
         public int MinuteIncrement
         {
-            get => _minuteIncrement;
-            set
-            {
-                if (value < 1 || value > 59)
-                    throw new ArgumentOutOfRangeException("1 >= MinuteIncrement <= 59");
-                SetAndRaise(MinuteIncrementProperty, ref _minuteIncrement, value);
-                InitPicker();
-            }
+            get => GetValue(MinuteIncrementProperty);
+            set => SetValue(MinuteIncrementProperty, value);
         }
 
         /// <summary>
@@ -95,14 +91,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string ClockIdentifier
         {
-            get => _clockIdentifier;
-            set
-            {
-                if (string.IsNullOrEmpty(value) || !(value == "12HourClock" || value == "24HourClock"))
-                    throw new ArgumentException("Invalid ClockIdentifier");
-                SetAndRaise(ClockIdentifierProperty, ref _clockIdentifier, value);
-                InitPicker();
-            }
+            get => GetValue(ClockIdentifierProperty);
+            set => SetValue(ClockIdentifierProperty, value);
         }
 
         /// <summary>
@@ -110,12 +100,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TimeSpan Time
         {
-            get => _time;
-            set
-            {
-                SetAndRaise(TimeProperty, ref _time, value);
-                InitPicker();
-            }
+            get => GetValue(TimeProperty);
+            set => SetValue(TimeProperty, value);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

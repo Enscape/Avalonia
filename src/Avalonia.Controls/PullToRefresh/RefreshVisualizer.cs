@@ -20,13 +20,11 @@ namespace Avalonia.Controls
         private double _executingRatio = 0.8;
 
         private RefreshVisualizerState _refreshVisualizerState;
-        private RefreshInfoProvider? _refreshInfoProvider;
         private IDisposable? _isInteractingSubscription;
         private IDisposable? _interactionRatioSubscription;
         private bool _isInteractingForRefresh;
         private Grid? _root;
         private Control? _content;
-        private RefreshVisualizerOrientation _orientation;
         private float _startingRotationAngle;
         private double _interactionRatio;
         private bool _played;
@@ -57,16 +55,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
-        public static readonly DirectProperty<RefreshVisualizer, RefreshVisualizerOrientation> OrientationProperty =
-            AvaloniaProperty.RegisterDirect<RefreshVisualizer, RefreshVisualizerOrientation>(nameof(Orientation),
-                s => s.Orientation, (s, o) => s.Orientation = o);
+        public static readonly StyledProperty<RefreshVisualizerOrientation> OrientationProperty =
+            AvaloniaProperty.Register<RefreshVisualizer, RefreshVisualizerOrientation>(nameof(Orientation));
 
         /// <summary>
         /// Defines the <see cref="RefreshInfoProvider"/> property.
         /// </summary>
-        internal DirectProperty<RefreshVisualizer, RefreshInfoProvider?> RefreshInfoProviderProperty =
-            AvaloniaProperty.RegisterDirect<RefreshVisualizer, RefreshInfoProvider?>(nameof(RefreshInfoProvider),
-                s => s.RefreshInfoProvider, (s, o) => s.RefreshInfoProvider = o);
+        internal static readonly StyledProperty<RefreshInfoProvider?> RefreshInfoProviderProperty =
+            AvaloniaProperty.Register<RefreshVisualizer, RefreshInfoProvider?>(nameof(RefreshInfoProvider));
 
         /// <summary>
         /// Gets or sets a value that indicates the refresh state of the visualizer.
@@ -89,14 +85,8 @@ namespace Avalonia.Controls
         /// </summary>
         public RefreshVisualizerOrientation Orientation
         {
-            get
-            {
-                return _orientation;
-            }
-            set
-            {
-                SetAndRaise(OrientationProperty, ref _orientation, value);
-            }
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         internal PullDirection PullDirection
@@ -107,15 +97,8 @@ namespace Avalonia.Controls
 
         internal RefreshInfoProvider? RefreshInfoProvider
         {
-            get => _refreshInfoProvider; 
-            set
-            {
-                if (_refreshInfoProvider != null)
-                {
-                    _refreshInfoProvider.RenderTransform = null;
-                }
-                SetAndRaise(RefreshInfoProviderProperty, ref _refreshInfoProvider, value);
-            }
+            get => GetValue(RefreshInfoProviderProperty);
+            set => SetValue(RefreshInfoProviderProperty, value);
         }
 
         /// <summary>
@@ -125,6 +108,17 @@ namespace Avalonia.Controls
         {
             add => AddHandler(RefreshRequestedEvent, value);
             remove => RemoveHandler(RefreshRequestedEvent, value);
+        }
+
+        static RefreshVisualizer()
+        {
+            RefreshInfoProviderProperty.Changed.AddClassHandler<RefreshVisualizer>((s, e) =>
+            {
+                if (e.OldValue is RefreshInfoProvider oldProvider)
+                {
+                    oldProvider.RenderTransform = null;
+                }
+            });
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -213,7 +207,7 @@ namespace Avalonia.Controls
             if (_content != null && _root != null)
             {
                 var root = _root;
-                var visual = _refreshInfoProvider?.Visual;
+                var visual = RefreshInfoProvider?.Visual;
                 var contentVisual = ElementComposition.GetElementVisual(_content);
                 var visualizerVisual = ElementComposition.GetElementVisual(this);
                 if (visual != null && contentVisual != null && visualizerVisual != null)
@@ -293,7 +287,7 @@ namespace Avalonia.Controls
 
                             contentVisual.StartAnimation("RotationAngle", _rotateAnimation);
                             contentVisual.Opacity = 1;
-                            float translationRatio = (float)(_refreshInfoProvider != null ?  (1.0f - _refreshInfoProvider.ExecutionRatio) * ParallaxPositionRatio : 1.0f) 
+                            float translationRatio = (float)(RefreshInfoProvider != null ?  (1.0f - RefreshInfoProvider.ExecutionRatio) * ParallaxPositionRatio : 1.0f) 
                                 * (IsPullDirectionFar ? -1f : 1f);
                             if (IsPullDirectionVertical)
                             {
@@ -403,7 +397,7 @@ namespace Avalonia.Controls
 
         private void OnOrientationChanged()
         {
-            switch (_orientation)
+            switch (Orientation)
             {
                 case RefreshVisualizerOrientation.Auto:
                     switch (PullDirection)

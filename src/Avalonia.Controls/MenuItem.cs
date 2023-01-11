@@ -27,11 +27,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<MenuItem, ICommand?> CommandProperty =
-            Button.CommandProperty.AddOwner<MenuItem>(
-                menuItem => menuItem.Command,
-                (menuItem, command) => menuItem.Command = command,
-                enableDataValidation: true);
+        public static readonly StyledProperty<ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -113,7 +110,6 @@ namespace Avalonia.Controls
         private static readonly ITemplate<Panel> DefaultPanel =
             new FuncTemplate<Panel>(() => new StackPanel());
 
-        private ICommand? _command;
         private bool _commandCanExecute = true;
         private bool _commandBindingError;
         private Popup? _popup;
@@ -217,8 +213,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand? Command
         {
-            get { return _command; }
-            set { SetAndRaise(CommandProperty, ref _command, value); }
+            get => GetValue(CommandProperty);
+            set => SetValue(CommandProperty, value);
         }
 
         /// <summary>

@@ -15,9 +15,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> AsciiOnlyProperty =
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
 
-        public static readonly DirectProperty<MaskedTextBox, CultureInfo?> CultureProperty =
-             AvaloniaProperty.RegisterDirect<MaskedTextBox, CultureInfo?>(nameof(Culture), o => o.Culture,
-                (o, v) => o.Culture = v, CultureInfo.CurrentCulture);
+        public static readonly StyledProperty<CultureInfo?> CultureProperty =
+             AvaloniaProperty.Register<MaskedTextBox, CultureInfo?>(nameof(Culture), CultureInfo.CurrentCulture);
 
         public static readonly StyledProperty<bool> HidePromptOnLeaveProperty =
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(HidePromptOnLeave));
@@ -37,19 +36,13 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<char> PromptCharProperty =
              AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
 
-        public static readonly DirectProperty<MaskedTextBox, bool> ResetOnPromptProperty =
-             AvaloniaProperty.RegisterDirect<MaskedTextBox, bool>(nameof(ResetOnPrompt), o => o.ResetOnPrompt, (o, v) => o.ResetOnPrompt = v);
+        public static readonly StyledProperty<bool> ResetOnPromptProperty =
+             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(ResetOnPrompt), true);
 
-        public static readonly DirectProperty<MaskedTextBox, bool> ResetOnSpaceProperty =
-             AvaloniaProperty.RegisterDirect<MaskedTextBox, bool>(nameof(ResetOnSpace), o => o.ResetOnSpace, (o, v) => o.ResetOnSpace = v);
-
-        private CultureInfo? _culture;
-
-        private bool _resetOnPrompt = true;
+        public static readonly StyledProperty<bool> ResetOnSpaceProperty =
+             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(ResetOnSpace), true);
 
         private bool _ignoreTextChanges;
-
-        private bool _resetOnSpace = true;
 
         public MaskedTextBox() { }
 
@@ -69,6 +62,12 @@ namespace Avalonia.Controls
             PromptChar = maskedTextProvider.PromptChar;
         }
 
+        static MaskedTextBox()
+        {
+            ResetOnPromptProperty.Changed.AddClassHandler<MaskedTextBox, bool>(OnResetOnPromptChanged);
+            ResetOnSpaceProperty.Changed.AddClassHandler<MaskedTextBox, bool>(OnResetOnSpaceChanged);
+        }
+
         /// <summary>
         /// Gets or sets a value indicating if the masked text box is restricted to accept only ASCII characters.
         /// Default value is false.
@@ -84,8 +83,8 @@ namespace Avalonia.Controls
         /// </summary>
         public CultureInfo? Culture
         {
-            get => _culture;
-            set => SetAndRaise(CultureProperty, ref _culture, value);
+            get => GetValue(CultureProperty);
+            set => SetValue(CultureProperty, value);
         }
 
         /// <summary>
@@ -151,15 +150,15 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ResetOnPrompt
         {
-            get => _resetOnPrompt;
-            set
-            {
-                SetAndRaise(ResetOnPromptProperty, ref _resetOnPrompt, value);
-                if (MaskProvider != null)
-                {
-                    MaskProvider.ResetOnPrompt = value;
-                }
+            get => GetValue(ResetOnPromptProperty);
+            set => SetValue(ResetOnPromptProperty, value);
+        }
 
+        private static void OnResetOnPromptChanged(MaskedTextBox sender, AvaloniaPropertyChangedEventArgs<bool> e)
+        {
+            if (sender.MaskProvider != null && e.NewValue.HasValue)
+            {
+                sender.MaskProvider.ResetOnPrompt = e.NewValue.Value;
             }
         }
 
@@ -168,18 +167,16 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ResetOnSpace
         {
-            get => _resetOnSpace;
-            set
+            get => GetValue(ResetOnSpaceProperty);
+            set => SetValue(ResetOnSpaceProperty, value);
+        }
+
+        private static void OnResetOnSpaceChanged(MaskedTextBox sender, AvaloniaPropertyChangedEventArgs<bool> e)
+        {
+            if (sender.MaskProvider != null && e.NewValue.HasValue)
             {
-                SetAndRaise(ResetOnSpaceProperty, ref _resetOnSpace, value);
-                if (MaskProvider != null)
-                {
-                    MaskProvider.ResetOnSpace = value;
-                }
-
+                sender.MaskProvider.ResetOnSpace = e.NewValue.Value;
             }
-
-
         }
 
         Type IStyleable.StyleKey => typeof(TextBox);

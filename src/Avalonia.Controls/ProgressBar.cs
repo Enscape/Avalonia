@@ -17,89 +17,62 @@ namespace Avalonia.Controls
     {
         public class ProgressBarTemplateProperties : AvaloniaObject
         {
-            private double _container2Width;
-            private double _containerWidth;
-            private double _containerAnimationStartPosition;
-            private double _containerAnimationEndPosition;
-            private double _container2AnimationStartPosition;
-            private double _container2AnimationEndPosition;
+            public static readonly StyledProperty<double> ContainerAnimationStartPositionProperty =
+                AvaloniaProperty.Register<ProgressBarTemplateProperties, double>(nameof(ContainerAnimationStartPosition));
 
-            public static readonly DirectProperty<ProgressBarTemplateProperties, double> ContainerAnimationStartPositionProperty =
-           AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
-               nameof(ContainerAnimationStartPosition),
-               p => p.ContainerAnimationStartPosition,
-               (p, o) => p.ContainerAnimationStartPosition = o, 0d);
+            public static readonly StyledProperty<double> ContainerAnimationEndPositionProperty =
+                AvaloniaProperty.Register<ProgressBarTemplateProperties, double>(nameof(ContainerAnimationEndPosition));
 
-            public static readonly DirectProperty<ProgressBarTemplateProperties, double> ContainerAnimationEndPositionProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
-                    nameof(ContainerAnimationEndPosition),
-                    p => p.ContainerAnimationEndPosition,
-                    (p, o) => p.ContainerAnimationEndPosition = o, 0d);
+            public static readonly StyledProperty<double> Container2AnimationStartPositionProperty =
+                AvaloniaProperty.Register<ProgressBarTemplateProperties, double>(nameof(Container2AnimationStartPosition));
 
-            public static readonly DirectProperty<ProgressBarTemplateProperties, double> Container2AnimationStartPositionProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
-                    nameof(Container2AnimationStartPosition),
-                    p => p.Container2AnimationStartPosition,
-                    (p, o) => p.Container2AnimationStartPosition = o, 0d);
+            public static readonly StyledProperty<double> Container2AnimationEndPositionProperty =
+                AvaloniaProperty.Register<ProgressBarTemplateProperties, double>(nameof(Container2AnimationEndPosition));
 
-            public static readonly DirectProperty<ProgressBarTemplateProperties, double> Container2AnimationEndPositionProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
-                    nameof(Container2AnimationEndPosition),
-                    p => p.Container2AnimationEndPosition,
-                    (p, o) => p.Container2AnimationEndPosition = o);
+            public static readonly StyledProperty<double> Container2WidthProperty =
+                AvaloniaProperty.Register<ProgressBarTemplateProperties, double>(nameof(Container2Width));
 
-            public static readonly DirectProperty<ProgressBarTemplateProperties, double> Container2WidthProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
-                    nameof(Container2Width),
-                    p => p.Container2Width,
-                    (p, o) => p.Container2Width = o);
-
-            public static readonly DirectProperty<ProgressBarTemplateProperties, double> ContainerWidthProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
-                    nameof(ContainerWidth),
-                    p => p.ContainerWidth,
-                    (p, o) => p.ContainerWidth = o);
+            public static readonly StyledProperty<double> ContainerWidthProperty =
+                AvaloniaProperty.Register<ProgressBarTemplateProperties, double>(nameof(ContainerWidth));
 
             public double ContainerAnimationStartPosition
             {
-                get => _containerAnimationStartPosition;
-                set => SetAndRaise(ContainerAnimationStartPositionProperty, ref _containerAnimationStartPosition, value);
+                get => GetValue(ContainerAnimationStartPositionProperty);
+                set => SetValue(ContainerAnimationStartPositionProperty, value);
             }
 
             public double ContainerAnimationEndPosition
             {
-                get => _containerAnimationEndPosition;
-                set => SetAndRaise(ContainerAnimationEndPositionProperty, ref _containerAnimationEndPosition, value);
+                get => GetValue(ContainerAnimationEndPositionProperty);
+                set => SetValue(ContainerAnimationEndPositionProperty, value);
             }
 
             public double Container2AnimationStartPosition
             {
-                get => _container2AnimationStartPosition;
-                set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition, value);
+                get => GetValue(Container2AnimationStartPositionProperty);
+                set => SetValue(Container2AnimationStartPositionProperty, value);
             }
 
             public double Container2Width
             {
-                get => _container2Width;
-                set => SetAndRaise(Container2WidthProperty, ref _container2Width, value);
+                get => GetValue(Container2WidthProperty);
+                set => SetValue(Container2WidthProperty, value);
             }
 
             public double ContainerWidth
             {
-                get => _containerWidth;
-                set => SetAndRaise(ContainerWidthProperty, ref _containerWidth, value);
+                get => GetValue(ContainerWidthProperty);
+                set => SetValue(ContainerWidthProperty, value);
             }
 
             public double Container2AnimationEndPosition
             {
-                get => _container2AnimationEndPosition;
-                set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
+                get => GetValue(Container2AnimationEndPositionProperty);
+                set => SetValue(Container2AnimationEndPositionProperty, value);
             }
         }
 
         private double _percentage;
-        private double _indeterminateStartingOffset;
-        private double _indeterminateEndingOffset;
         private Border? _indicator;
         private IDisposable? _trackSizeChangedListener;
 
@@ -120,17 +93,11 @@ namespace Avalonia.Controls
                 nameof(Percentage),
                 o => o.Percentage);
 
-        public static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(IndeterminateStartingOffset),
-                p => p.IndeterminateStartingOffset,
-                (p, o) => p.IndeterminateStartingOffset = o);
+        public static readonly StyledProperty<double> IndeterminateStartingOffsetProperty =
+            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateStartingOffset));
 
-        public static readonly DirectProperty<ProgressBar, double> IndeterminateEndingOffsetProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(IndeterminateEndingOffset),
-                p => p.IndeterminateEndingOffset,
-                (p, o) => p.IndeterminateEndingOffset = o);
+        public static readonly StyledProperty<double> IndeterminateEndingOffsetProperty =
+            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateEndingOffset));
 
         public double Percentage
         {
@@ -140,19 +107,19 @@ namespace Avalonia.Controls
 
         public double IndeterminateStartingOffset
         {
-            get => _indeterminateStartingOffset;
-            set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
+            get => GetValue(IndeterminateStartingOffsetProperty);
+            set => SetValue(IndeterminateStartingOffsetProperty, value);
         }
 
         public double IndeterminateEndingOffset
         {
-            get => _indeterminateEndingOffset;
-            set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
+            get => GetValue(IndeterminateEndingOffsetProperty);
+            set => SetValue(IndeterminateEndingOffsetProperty, value);
         }
 
         static ProgressBar()
         {
-            ValueProperty.OverrideMetadata<ProgressBar>(new DirectPropertyMetadata<double>(defaultBindingMode: BindingMode.OneWay));
+            ValueProperty.OverrideMetadata<ProgressBar>(new(defaultBindingMode: BindingMode.OneWay));
             ValueProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             MinimumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             MaximumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));

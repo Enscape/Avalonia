@@ -18,44 +18,34 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
         /// </summary>
-        public static readonly DirectProperty<ScrollContentPresenter, bool> CanHorizontallyScrollProperty =
-            AvaloniaProperty.RegisterDirect<ScrollContentPresenter, bool>(
-                nameof(CanHorizontallyScroll),
-                o => o.CanHorizontallyScroll,
-                (o, v) => o.CanHorizontallyScroll = v);
+        public static readonly StyledProperty<bool> CanHorizontallyScrollProperty =
+            AvaloniaProperty.Register<ScrollContentPresenter, bool>(nameof(CanHorizontallyScroll));
 
         /// <summary>
         /// Defines the <see cref="CanVerticallyScroll"/> property.
         /// </summary>
-        public static readonly DirectProperty<ScrollContentPresenter, bool> CanVerticallyScrollProperty =
-            AvaloniaProperty.RegisterDirect<ScrollContentPresenter, bool>(
-                nameof(CanVerticallyScroll),
-                o => o.CanVerticallyScroll,
-                (o, v) => o.CanVerticallyScroll = v);
+        public static readonly StyledProperty<bool> CanVerticallyScrollProperty =
+            AvaloniaProperty.Register<ScrollContentPresenter, bool>(nameof(CanVerticallyScroll));
 
         /// <summary>
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollContentPresenter, Size> ExtentProperty =
             ScrollViewer.ExtentProperty.AddOwner<ScrollContentPresenter>(
-                o => o.Extent,
-                (o, v) => o.Extent = v);
+                o => o.Extent);
 
         /// <summary>
         /// Defines the <see cref="Offset"/> property.
         /// </summary>
-        public static readonly DirectProperty<ScrollContentPresenter, Vector> OffsetProperty =
-            ScrollViewer.OffsetProperty.AddOwner<ScrollContentPresenter>(
-                o => o.Offset,
-                (o, v) => o.Offset = v);
+        public static readonly StyledProperty<Vector> OffsetProperty =
+            ScrollViewer.OffsetProperty.AddOwner<ScrollContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="Viewport"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollContentPresenter, Size> ViewportProperty =
             ScrollViewer.ViewportProperty.AddOwner<ScrollContentPresenter>(
-                o => o.Viewport,
-                (o, v) => o.Viewport = v);
+                o => o.Viewport);
 
         /// <summary>
         /// Defines the <see cref="IsScrollChainingEnabled"/> property.
@@ -63,11 +53,8 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<bool> IsScrollChainingEnabledProperty =
             ScrollViewer.IsScrollChainingEnabledProperty.AddOwner<ScrollContentPresenter>();
 
-        private bool _canHorizontallyScroll;
-        private bool _canVerticallyScroll;
         private bool _arranging;
         private Size _extent;
-        private Vector _offset;
         private IDisposable? _logicalScrollSubscription;
         private Size _viewport;
         private Dictionary<int, Vector>? _activeLogicalGestureScrolls;
@@ -102,8 +89,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public bool CanHorizontallyScroll
         {
-            get { return _canHorizontallyScroll; }
-            set { SetAndRaise(CanHorizontallyScrollProperty, ref _canHorizontallyScroll, value); }
+            get => GetValue(CanHorizontallyScrollProperty);
+            set => SetValue(CanHorizontallyScrollProperty, value);
         }
 
         /// <summary>
@@ -111,8 +98,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public bool CanVerticallyScroll
         {
-            get { return _canVerticallyScroll; }
-            set { SetAndRaise(CanVerticallyScrollProperty, ref _canVerticallyScroll, value); }
+            get => GetValue(CanHorizontallyScrollProperty);
+            set => SetValue(CanHorizontallyScrollProperty, value);
         }
 
         /// <summary>
@@ -129,8 +116,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public Vector Offset
         {
-            get { return _offset; }
-            set { SetAndRaise(OffsetProperty, ref _offset, ScrollViewer.CoerceOffset(Extent, Viewport, value)); }
+            get => GetValue(OffsetProperty);
+            set => SetValue(OffsetProperty, value);
         }
 
         /// <summary>

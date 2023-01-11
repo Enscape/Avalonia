@@ -14,21 +14,19 @@ namespace Avalonia.Controls.PullToRefresh
 
         private readonly CompositionVisual? _visual;
         private bool _isInteractingForRefresh;
-        private double _interactionRatio;
         private bool _entered;
 
         public DirectProperty<RefreshInfoProvider, bool> IsInteractingForRefreshProperty =
             AvaloniaProperty.RegisterDirect<RefreshInfoProvider, bool>(nameof(IsInteractingForRefresh),
-                s => s.IsInteractingForRefresh, (s, o) => s.IsInteractingForRefresh = o);
+                s => s.IsInteractingForRefresh);
 
 
         public DirectProperty<RefreshInfoProvider, double> ExecutionRatioProperty =
             AvaloniaProperty.RegisterDirect<RefreshInfoProvider, double>(nameof(ExecutionRatio),
                 s => s.ExecutionRatio);
 
-        public DirectProperty<RefreshInfoProvider, double> InteractionRatioProperty =
-            AvaloniaProperty.RegisterDirect<RefreshInfoProvider, double>(nameof(InteractionRatio),
-                s => s.InteractionRatio, (s, o) => s.InteractionRatio = o);
+        public StyledProperty<double> InteractionRatioProperty =
+            AvaloniaProperty.Register<RefreshInfoProvider, double>(nameof(InteractionRatio));
 
         /// <summary>
         /// Defines the <see cref="RefreshStarted"/> event.
@@ -60,11 +58,8 @@ namespace Avalonia.Controls.PullToRefresh
 
         public double InteractionRatio
         {
-            get => _interactionRatio;
-            set
-            {
-                SetAndRaise(InteractionRatioProperty, ref _interactionRatio, value);
-            }
+            get => GetValue(InteractionRatioProperty);
+            set => SetValue(InteractionRatioProperty, value);
         }
 
         public double ExecutionRatio

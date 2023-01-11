@@ -17,17 +17,10 @@ namespace Avalonia.Controls
     /// </summary>
     public class SelectableTextBlock : TextBlock, IInlineHost
     {
-        public static readonly DirectProperty<SelectableTextBlock, int> SelectionStartProperty =
-            AvaloniaProperty.RegisterDirect<SelectableTextBlock, int>(
-                nameof(SelectionStart),
-                o => o.SelectionStart,
-                (o, v) => o.SelectionStart = v);
-
-        public static readonly DirectProperty<SelectableTextBlock, int> SelectionEndProperty =
-            AvaloniaProperty.RegisterDirect<SelectableTextBlock, int>(
-                nameof(SelectionEnd),
-                o => o.SelectionEnd,
-                (o, v) => o.SelectionEnd = v);
+        public static readonly StyledProperty<int> SelectionStartProperty =
+            AvaloniaProperty.Register<SelectableTextBlock, int>(nameof(SelectionStart));
+        public static readonly StyledProperty<int> SelectionEndProperty =
+            AvaloniaProperty.Register<SelectableTextBlock, int>(nameof(SelectionEnd));
 
         public static readonly DirectProperty<SelectableTextBlock, string> SelectedTextProperty =
             AvaloniaProperty.RegisterDirect<SelectableTextBlock, string>(
@@ -48,14 +41,21 @@ namespace Avalonia.Controls
                 nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
         private bool _canCopy;
-        private int _selectionStart;
-        private int _selectionEnd;
         private int _wordSelectionStart = -1;
 
         static SelectableTextBlock()
         {
             FocusableProperty.OverrideDefaultValue(typeof(SelectableTextBlock), true);
             AffectsRender<SelectableTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty);
+
+            SelectionStartProperty.Changed.AddClassHandler<SelectableTextBlock>(OnSelectionRangeChanged);
+            SelectionEndProperty.Changed.AddClassHandler<SelectableTextBlock>(OnSelectionRangeChanged);
+        }
+
+        private static void OnSelectionRangeChanged(SelectableTextBlock sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            sender.RaisePropertyChanged(SelectedTextProperty, "", "");
+            sender.UpdateCommandStates();
         }
 
         public event EventHandler<RoutedEventArgs>? CopyingToClipboard
@@ -78,16 +78,8 @@ namespace Avalonia.Controls
         /// </summary>
         public int SelectionStart
         {
-            get => _selectionStart;
-            set
-            {
-                if (SetAndRaise(SelectionStartProperty, ref _selectionStart, value))
-                {
-                    RaisePropertyChanged(SelectedTextProperty, "", "");
-
-                    UpdateCommandStates();
-                }
-            }
+            get => GetValue(SelectionStartProperty);
+            set => SetValue(SelectionStartProperty, value);
         }
 
         /// <summary>
@@ -95,16 +87,8 @@ namespace Avalonia.Controls
         /// </summary>
         public int SelectionEnd
         {
-            get => _selectionEnd;
-            set
-            {
-                if (SetAndRaise(SelectionEndProperty, ref _selectionEnd, value))
-                {
-                    RaisePropertyChanged(SelectedTextProperty, "", "");
-
-                    UpdateCommandStates();
-                }
-            }
+            get => GetValue(SelectionStartProperty);
+            set => SetValue(SelectionStartProperty, value);
         }
 
         /// <summary>
@@ -407,9 +391,8 @@ namespace Avalonia.Controls
 
         private string GetSelection()
         {
-            var text = GetText();
-
-            if (string.IsNullOrEmpty(text))
+            var textLength = Text?.Length ?? 0;
+            if (textLength == 0)
             {
                 return "";
             }
@@ -419,14 +402,14 @@ namespace Avalonia.Controls
             var start = Math.Min(selectionStart, selectionEnd);
             var end = Math.Max(selectionStart, selectionEnd);
 
-            if (start == end || text.Length < end)
+            if (start == end || textLength < end)
             {
                 return "";
             }
 
             var length = Math.Max(0, end - start);
 
-            var selectedText = text.Substring(start, length);
+            var selectedText = Text.Substring(start, length);
 
             return selectedText;
         }

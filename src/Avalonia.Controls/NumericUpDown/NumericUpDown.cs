@@ -43,16 +43,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ClipValueToMinMax"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, bool> ClipValueToMinMaxProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, bool>(nameof(ClipValueToMinMax),
-                updown => updown.ClipValueToMinMax, (updown, b) => updown.ClipValueToMinMax = b);
+        public static readonly StyledProperty<bool> ClipValueToMinMaxProperty =
+            AvaloniaProperty.Register<NumericUpDown, bool>(nameof(ClipValueToMinMax));
 
         /// <summary>
         /// Defines the <see cref="NumberFormat"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, NumberFormatInfo?> NumberFormatProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, NumberFormatInfo?>(nameof(NumberFormat), o => o.NumberFormat,
-                (o, v) => o.NumberFormat = v, NumberFormatInfo.CurrentInfo);
+        public static readonly StyledProperty<NumberFormatInfo?> NumberFormatProperty =
+            AvaloniaProperty.Register<NumericUpDown, NumberFormatInfo?>(nameof(NumberFormat), NumberFormatInfo.CurrentInfo);
 
         /// <summary>
         /// Defines the <see cref="FormatString"/> property.
@@ -87,30 +85,37 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ParsingNumberStyle"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, NumberStyles> ParsingNumberStyleProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, NumberStyles>(nameof(ParsingNumberStyle),
-                updown => updown.ParsingNumberStyle, (updown, style) => updown.ParsingNumberStyle = style);
+        public static readonly StyledProperty<NumberStyles> ParsingNumberStyleProperty =
+            AvaloniaProperty.Register<NumericUpDown, NumberStyles>(nameof(ParsingNumberStyle), NumberStyles.Any);
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, string?> TextProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, string?>(nameof(Text), o => o.Text, (o, v) => o.Text = v,
+        public static readonly StyledProperty<string?> TextProperty =
+            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(Text), 
                 defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="TextConverter"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, IValueConverter?> TextConverterProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, IValueConverter?>(nameof(TextConverter),
-                updown => updown.TextConverter, (o, v) => o.TextConverter = v, null, BindingMode.OneWay, false);
+        public static readonly StyledProperty<IValueConverter?> TextConverterProperty =
+            AvaloniaProperty.Register<NumericUpDown, IValueConverter?>(nameof(TextConverter), defaultBindingMode: BindingMode.OneWay);
 
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, decimal?> ValueProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, decimal?>(nameof(Value), updown => updown.Value,
-                (updown, v) => updown.Value = v, defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+        public static readonly StyledProperty<decimal?> ValueProperty =
+            AvaloniaProperty.Register<NumericUpDown, decimal?>(nameof(Value), coerce: OnCoerceValue,
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+
+        private static decimal? OnCoerceValue(AvaloniaObject sender, decimal? value)
+        {
+            if (sender is NumericUpDown upDown)
+            {
+                return upDown.OnCoerceValue(value);
+            }
+            return value;
+        }
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
@@ -132,15 +137,9 @@ namespace Avalonia.Controls
 
         private IDisposable? _textBoxTextChangedSubscription;
 
-        private decimal? _value;
-        private string? _text;
-        private IValueConverter? _textConverter;
         private bool _internalValueSet;
-        private bool _clipValueToMinMax;
         private bool _isSyncingTextAndValueProperties;
         private bool _isTextChangedFromUI;
-        private NumberStyles _parsingNumberStyle = NumberStyles.Any;
-        private NumberFormatInfo? _numberFormat;
 
         /// <summary>
         /// Gets the Spinner template part.
@@ -184,8 +183,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ClipValueToMinMax
         {
-            get { return _clipValueToMinMax; }
-            set { SetAndRaise(ClipValueToMinMaxProperty, ref _clipValueToMinMax, value); }
+            get => GetValue(ClipValueToMinMaxProperty);
+            set => SetValue(ClipValueToMinMaxProperty, value);
         }
 
         /// <summary>
@@ -193,8 +192,8 @@ namespace Avalonia.Controls
         /// </summary>
         public NumberFormatInfo? NumberFormat
         {
-            get { return _numberFormat; }
-            set { SetAndRaise(NumberFormatProperty, ref _numberFormat, value); }
+            get => GetValue(NumberFormatProperty);
+            set => SetValue(NumberFormatProperty, value);
         }
 
         /// <summary>
@@ -249,8 +248,8 @@ namespace Avalonia.Controls
         /// </summary>
         public NumberStyles ParsingNumberStyle
         {
-            get { return _parsingNumberStyle; }
-            set { SetAndRaise(ParsingNumberStyleProperty, ref _parsingNumberStyle, value); }
+            get => GetValue(ParsingNumberStyleProperty);
+            set => SetValue(ParsingNumberStyleProperty, value);
         }
 
         /// <summary>
@@ -258,8 +257,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string? Text
         {
-            get { return _text; }
-            set { SetAndRaise(TextProperty, ref _text, value); }
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
 
         /// <summary>
@@ -269,8 +268,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IValueConverter? TextConverter
         {
-            get { return _textConverter; }
-            set { SetAndRaise(TextConverterProperty, ref _textConverter, value); }
+            get => GetValue(TextConverterProperty);
+            set => SetValue(TextConverterProperty, value);
         }
 
         /// <summary>
@@ -278,12 +277,8 @@ namespace Avalonia.Controls
         /// </summary>
         public decimal? Value
         {
-            get { return _value; }
-            set
-            {
-                value = OnCoerceValue(value);
-                SetAndRaise(ValueProperty, ref _value, value);
-            }
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
         }
 
         /// <summary>

@@ -96,24 +96,21 @@ namespace Avalonia.Controls
             }
         }
 
-        public static readonly DirectProperty<RadioButton, string?> GroupNameProperty =
-            AvaloniaProperty.RegisterDirect<RadioButton, string?>(
-                nameof(GroupName),
-                o => o.GroupName,
-                (o, v) => o.GroupName = v);
+        public static readonly StyledProperty<string?> GroupNameProperty =
+            AvaloniaProperty.Register<RadioButton, string?>(nameof(GroupName));
 
-        private string? _groupName;
         private RadioButtonGroupManager? _groupManager;
 
-        public RadioButton()
+        static RadioButton()
         {
-            this.GetObservable(IsCheckedProperty).Subscribe(IsCheckedChanged);
+            IsCheckedProperty.Changed.AddClassHandler<RadioButton>((s, e) => s.IsCheckedChanged(e.GetNewValue<bool?>()));
+            GroupNameProperty.Changed.AddClassHandler<RadioButton>(OnGroupNameChanged);
         }
 
         public string? GroupName
         {
-            get { return _groupName; }
-            set { SetGroupName(value); }
+            get => GetValue(GroupNameProperty);
+            set => SetValue(GroupNameProperty, value);
         }
 
         protected override void Toggle()
@@ -147,24 +144,25 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetGroupName(string? newGroupName)
+        private static void OnGroupNameChanged(RadioButton sender, AvaloniaPropertyChangedEventArgs e)
         {
-            var oldGroupName = GroupName;
-            if (newGroupName != oldGroupName)
+            var (oldGroupName, newGroupName) = e.GetOldAndNewValue<string?>();
+            sender.OnGroupNameChanged(oldGroupName, newGroupName);
+        }
+
+        private void OnGroupNameChanged(string oldGroupName, string newGroupName)
+        {
+            if (!string.IsNullOrEmpty(oldGroupName))
             {
-                if (!string.IsNullOrEmpty(oldGroupName))
+                _groupManager?.Remove(this, oldGroupName);
+            }
+            if (!string.IsNullOrEmpty(newGroupName))
+            {
+                if (_groupManager == null)
                 {
-                    _groupManager?.Remove(this, oldGroupName);
+                    _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(this.GetVisualRoot());
                 }
-                _groupName = newGroupName;
-                if (!string.IsNullOrEmpty(newGroupName))
-                {
-                    if (_groupManager == null)
-                    {
-                        _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(this.GetVisualRoot());
-                    }
-                    _groupManager.Add(this);
-                }
+                _groupManager.Add(this);
             }
         }
 
