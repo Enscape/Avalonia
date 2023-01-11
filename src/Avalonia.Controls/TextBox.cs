@@ -61,11 +61,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="CaretIndex"/> property
         /// </summary>
-        public static readonly DirectProperty<TextBox, int> CaretIndexProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, int>(
-                nameof(CaretIndex),
-                o => o.CaretIndex,
-                (o, v) => o.CaretIndex = v);
+        public static readonly StyledProperty<int> CaretIndexProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(CaretIndex),
+                coerce: CoerceCaretIndex);
 
         /// <summary>
         /// Defines the <see cref="IsReadOnly"/> property
@@ -100,20 +98,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectionStart"/> property
         /// </summary>
-        public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, int>(
-                nameof(SelectionStart),
-                o => o.SelectionStart,
-                (o, v) => o.SelectionStart = v);
+        public static readonly StyledProperty<int> SelectionStartProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(SelectionStart), 
+                coerce: CoerceCaretIndex);
 
         /// <summary>
         /// Defines the <see cref="SelectionEnd"/> property
         /// </summary>
-        public static readonly DirectProperty<TextBox, int> SelectionEndProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, int>(
-                nameof(SelectionEnd),
-                o => o.SelectionEnd,
-                (o, v) => o.SelectionEnd = v);
+        public static readonly StyledProperty<int> SelectionEndProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(SelectionEnd),
+                coerce: CoerceCaretIndex);
 
         /// <summary>
         /// Defines the <see cref="MaxLength"/> property
@@ -130,12 +124,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Text"/> property
         /// </summary>
-        public static readonly DirectProperty<TextBox, string?> TextProperty =
-            TextBlock.TextProperty.AddOwnerWithDataValidation<TextBox>(
-                o => o.Text,
-                (o, v) => o.Text = v,
+        public static readonly StyledProperty<string?> TextProperty =
+            TextBlock.TextProperty.AddOwner<TextBox>(new(
+                coerce: CoerceText,
                 defaultBindingMode: BindingMode.TwoWay,
-                enableDataValidation: true);
+                enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property
@@ -185,9 +178,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="NewLine"/> property
         /// </summary>
-        public static readonly DirectProperty<TextBox, string> NewLineProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, string>(nameof(NewLine),
-                textbox => textbox.NewLine, (textbox, newline) => textbox.NewLine = newline);
+        public static readonly StyledProperty<string> NewLineProperty =
+            AvaloniaProperty.Register<TextBox, string>(nameof(NewLine), Environment.NewLine);
 
         /// <summary>
         /// Defines the <see cref="InnerLeftContent"/> property
@@ -242,12 +234,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="UndoLimit"/> property
         /// </summary>
-        public static readonly DirectProperty<TextBox, int> UndoLimitProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, int>(
-                nameof(UndoLimit),
-                o => o.UndoLimit,
-                (o, v) => o.UndoLimit = v,
-                unsetValue: -1);
+        public static readonly StyledProperty<int> UndoLimitProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(UndoLimit), UndoRedoHelper<UndoRedoState>.DefaultUndoLimit);
 
         /// <summary>
         /// Defines the <see cref="CanUndo"/> property
@@ -318,18 +306,13 @@ namespace Avalonia.Controls
             public override int GetHashCode() => Text?.GetHashCode() ?? 0;
         }
 
-        private string? _text;
-        private int _caretIndex;
-        private int _selectionStart;
-        private int _selectionEnd;
         private TextPresenter? _presenter;
-        private TextBoxTextInputMethodClient _imClient = new TextBoxTextInputMethodClient();
-        private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
+        private readonly TextBoxTextInputMethodClient _imClient = new();
+        private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
         private bool _canCut;
         private bool _canCopy;
         private bool _canPaste;
-        private string _newLine = Environment.NewLine;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
         private bool _canUndo;
         private bool _canRedo;
@@ -349,6 +332,14 @@ namespace Avalonia.Controls
                     e.Client = tb._imClient;
                 }
             });
+
+            TextProperty.Changed.AddClassHandler<TextBox>((s, e) => s.RaiseTextChangeEvents());
+
+            CaretIndexProperty.Changed.AddClassHandler<TextBox>((s, e) => s.OnCaretIndexChanged(e));
+            SelectionStartProperty.Changed.AddClassHandler<TextBox>((s, e) => s.OnSelectionStartChanged(e));
+            SelectionEndProperty.Changed.AddClassHandler<TextBox>((s, e) => s.OnSelectionEndChanged(e));
+
+            UndoLimitProperty.Changed.AddClassHandler<TextBox>((s, e) => s.OnUndoLimitChanged(e.GetNewValue<int>()));
         }
 
         public TextBox()
@@ -399,18 +390,17 @@ namespace Avalonia.Controls
         /// </summary>
         public int CaretIndex
         {
-            get => _caretIndex;
-            set
-            {
-                value = CoerceCaretIndex(value);
-                SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
+            get => GetValue(CaretIndexProperty);
+            set => SetValue(CaretIndexProperty, value);
+        }
 
-                UndoRedoState state;
-                if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
-                    _undoRedoHelper.UpdateLastState();
+        private void OnCaretIndexChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            UndoRedoState state;
+            if (IsUndoEnabled && _undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
+                _undoRedoHelper.UpdateLastState();
 
-                SelectionStart = SelectionEnd = value;
-            }
+            SelectionStart = SelectionEnd = e.GetNewValue<int>();
         }
 
         /// <summary>
@@ -463,21 +453,18 @@ namespace Avalonia.Controls
         /// </summary>
         public int SelectionStart
         {
-            get => _selectionStart;
-            set
+            get => GetValue(SelectionStartProperty);
+            set => SetValue(SelectionStartProperty, value);
+        }
+
+        private void OnSelectionStartChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            UpdateCommandStates();
+
+            var value = e.GetNewValue<int>();
+            if (SelectionEnd == value && CaretIndex != value)
             {
-                value = CoerceCaretIndex(value);
-                var changed = SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
-
-                if (changed)
-                {
-                    UpdateCommandStates();
-                }
-
-                if (SelectionEnd == value && CaretIndex != value)
-                {
-                    CaretIndex = value;
-                }
+                CaretIndex = value;
             }
         }
 
@@ -490,21 +477,18 @@ namespace Avalonia.Controls
         /// </remarks>
         public int SelectionEnd
         {
-            get => _selectionEnd;
-            set
+            get => GetValue(SelectionEndProperty);
+            set => SetValue(SelectionEndProperty, value);
+        }
+        
+        private void OnSelectionEndChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            UpdateCommandStates();
+
+            var value = e.GetNewValue<int>();
+            if (SelectionStart == value && CaretIndex != value)
             {
-                value = CoerceCaretIndex(value);
-                var changed = SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
-
-                if (changed)
-                {
-                    UpdateCommandStates();
-                }
-
-                if (SelectionStart == value && CaretIndex != value)
-                {
-                    CaretIndex = value;
-                }
+                CaretIndex = value;
             }
         }
         
@@ -544,23 +528,14 @@ namespace Avalonia.Controls
             set => SetValue(LineHeightProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the Text content of the TextBox
-        /// </summary>
-        [Content]
-        public string? Text
+        private static string? CoerceText(AvaloniaObject sender, string? value)
         {
-            get => _text;
-            set
+            sender.CoerceValue(CaretIndexProperty);
+            sender.CoerceValue(SelectionStartProperty);
+            sender.CoerceValue(SelectionEndProperty);
+
+            if (sender is TextBox textBox)
             {
-                var caretIndex = CaretIndex;
-                var selectionStart = SelectionStart;
-                var selectionEnd = SelectionEnd;
-
-                CaretIndex = CoerceCaretIndex(caretIndex, value);
-                SelectionStart = CoerceCaretIndex(selectionStart, value);
-                SelectionEnd = CoerceCaretIndex(selectionEnd, value);
-
                 // Before #9490, snapshot here was done AFTER text change - this doesn't make sense
                 // since intial state would never be no text and you'd always have to make a text 
                 // change before undo would be available
@@ -568,18 +543,23 @@ namespace Avalonia.Controls
                 // as it is still valid to want to undo a programmatic text set
                 // So we snapshot text now BEFORE the change so we can always revert
                 // Also don't need to check IsUndoEnabled here, that's done in SnapshotUndoRedo
-                if (!_isUndoingRedoing)
+                if (!textBox._isUndoingRedoing)
                 {
-                    SnapshotUndoRedo();
-                }
-
-                var textChanged = SetAndRaise(TextProperty, ref _text, value);
-
-                if (textChanged)
-                {
-                    RaiseTextChangeEvents();
+                    textBox.SnapshotUndoRedo();
                 }
             }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Gets or sets the Text content of the TextBox
+        /// </summary>
+        [Content]
+        public string? Text
+        {
+            get => GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
         }
 
         /// <summary>
@@ -691,8 +671,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string NewLine
         {
-            get => _newLine;
-            set => SetAndRaise(NewLineProperty, ref _newLine, value);
+            get => GetValue(NewLineProperty);
+            set => SetValue(NewLineProperty, value);
         }
 
         /// <summary>
@@ -744,25 +724,20 @@ namespace Avalonia.Controls
         /// </summary>
         public int UndoLimit
         {
-            get => _undoRedoHelper.Limit;
-            set
-            {
-                if (_undoRedoHelper.Limit != value)
-                {
-                    // can't use SetAndRaise due to using _undoRedoHelper.Limit
-                    // (can't send a ref of a property to SetAndRaise),
-                    // so use RaisePropertyChanged instead.
-                    var oldValue = _undoRedoHelper.Limit;
-                    _undoRedoHelper.Limit = value;
-                    RaisePropertyChanged(UndoLimitProperty, oldValue, value);
-                }
-                // from docs at
-                // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
-                // "Setting UndoLimit clears the undo queue."
-                _undoRedoHelper.Clear();
-                _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
-                _hasDoneSnapshotOnce = false;
-            }
+            get => GetValue(UndoLimitProperty);
+            set => SetValue(UndoLimitProperty, value);
+        }
+
+        private void OnUndoLimitChanged(int newValue)
+        {
+            _undoRedoHelper.Limit = newValue;
+
+            // from docs at
+            // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
+            // "Setting UndoLimit clears the undo queue."
+            _undoRedoHelper.Clear();
+            _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
+            _hasDoneSnapshotOnce = false;
         }
 
         /// <summary>
@@ -990,8 +965,9 @@ namespace Avalonia.Controls
                 }
             }
 
-            var text = Text ?? string.Empty;
-            var newLength = input.Length + text.Length - Math.Abs(SelectionStart - SelectionEnd);
+            var currentText = Text ?? string.Empty;
+            var selectionLength = Math.Abs(SelectionStart - SelectionEnd);
+            var newLength = input.Length + currentText.Length - selectionLength;
 
             if (MaxLength > 0 && newLength > MaxLength)
             {
@@ -1000,22 +976,34 @@ namespace Avalonia.Controls
 
             if (!string.IsNullOrEmpty(input))
             {
-                var oldText = _text;
-
-                DeleteSelection(false);
+                var textBuilder = StringBuilderCache.Acquire(Math.Max(currentText.Length, newLength));
+                textBuilder.Append(currentText);
+                
                 var caretIndex = CaretIndex;
-                text = Text ?? string.Empty;
-                SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
+
+                if (selectionLength != 0)
+                {
+                    var (start, _) = GetSelectionRange();
+
+                    textBuilder.Remove(start, selectionLength);
+
+                    var caretSelectionOffset = caretIndex - start;
+                    if (caretSelectionOffset > 0)
+                    {
+                        caretIndex -= Math.Min(selectionLength, caretSelectionOffset);
+                    }
+                }
+
+                textBuilder.Insert(caretIndex, input);
+
+                Text = textBuilder.ToString();
+
+                StringBuilderCache.Release(textBuilder);
                 ClearSelection();
 
                 if (IsUndoEnabled)
                 {
                     _undoRedoHelper.DiscardRedo();
-                }
-
-                if (_text != oldText)
-                {
-                    RaisePropertyChanged(TextProperty, oldText, _text);
                 }
 
                 CaretIndex = caretIndex + input.Length;
@@ -1320,7 +1308,7 @@ namespace Avalonia.Controls
 
                                     var editedText = text.Substring(0, start) + text.Substring(Math.Min(end, text.Length));
 
-                                    SetTextInternal(editedText);
+                                    Text = editedText;
 
                                     CaretIndex = start;
                                 }
@@ -1352,7 +1340,7 @@ namespace Avalonia.Controls
 
                                 var editedText = text.Substring(0, start) + text.Substring(Math.Min(end, text.Length));
 
-                                SetTextInternal(editedText);
+                                Text = editedText;
                             }
                         }
 
@@ -1429,7 +1417,7 @@ namespace Avalonia.Controls
 
                 var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
 
-                SetAndRaise(CaretIndexProperty, ref _caretIndex, index);
+                CaretIndex = index;
 
                 switch (e.ClickCount)
                 {
@@ -1592,10 +1580,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text);
-
-        private static int CoerceCaretIndex(int value, string? text)
+        private static int CoerceCaretIndex(AvaloniaObject sender, int value)
         {
+            var text = sender.GetValue(TextProperty);
+
             if (text == null)
             {
                 return 0;
@@ -1755,21 +1743,30 @@ namespace Avalonia.Controls
             SelectionEnd = Text?.Length ?? 0;
         }
 
-        internal bool DeleteSelection(bool raiseTextChanged = true)
+        private (int start, int end) GetSelectionRange()
+        {
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
+
+            return (Math.Min(selectionStart, selectionEnd), Math.Max(selectionStart, selectionEnd));
+        }
+
+        internal bool DeleteSelection()
         {
             if (IsReadOnly)
                 return true;
 
-            var selectionStart = SelectionStart;
-            var selectionEnd = SelectionEnd;
+            var (start, end) = GetSelectionRange();
 
-            if (selectionStart != selectionEnd)
+            if (start != end)
             {
-                var start = Math.Min(selectionStart, selectionEnd);
-                var end = Math.Max(selectionStart, selectionEnd);
                 var text = Text!;
+                var textBuilder = StringBuilderCache.Acquire(text.Length);
 
-                SetTextInternal(text.Substring(0, start) + text.Substring(end), raiseTextChanged);
+                textBuilder.Append(text);
+                textBuilder.Remove(start, end - start);
+
+                Text = textBuilder.ToString();
 
                 _presenter?.MoveCaretToTextPosition(start);
 
@@ -1830,23 +1827,6 @@ namespace Avalonia.Controls
             }, DispatcherPriority.Normal);
         }
 
-        private void SetTextInternal(string value, bool raiseTextChanged = true)
-        {
-            if (raiseTextChanged)
-            {
-                bool textChanged = SetAndRaise(TextProperty, ref _text, value);
-
-                if (textChanged)
-                {
-                    RaiseTextChangeEvents();
-                }
-            }
-            else
-            {
-                _text = value;
-            }
-        }
-
         private void SetSelectionForControlBackspace()
         {
             var selectionStart = CaretIndex;
@@ -1858,7 +1838,8 @@ namespace Avalonia.Controls
 
         private void SetSelectionForControlDelete()
         {
-            if (_text == null || _presenter == null)
+            var textLength = Text?.Length ?? 0;
+            if (_presenter == null || textLength == 0)
             {
                 return;
             }
@@ -1867,7 +1848,7 @@ namespace Avalonia.Controls
 
             MoveHorizontal(1, true, true);
 
-            if (SelectionEnd < _text.Length && _text[SelectionEnd] == ' ')
+            if (SelectionEnd < textLength && Text![SelectionEnd] == ' ')
             {
                 SelectionEnd++;
             }

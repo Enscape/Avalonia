@@ -205,7 +205,7 @@ namespace Avalonia.Controls
             set => SetValue(TextProperty, value);
         }
 
-        private string DebugText => Text ?? Inlines?.Text;
+        private string? DebugText => Text ?? Inlines?.Text;
 
         /// <summary>
         /// Gets or sets the font family used to draw the control's text.

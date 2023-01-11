@@ -409,7 +409,7 @@ namespace Avalonia.Controls
 
             var length = Math.Max(0, end - start);
 
-            var selectedText = Text.Substring(start, length);
+            var selectedText = Text!.Substring(start, length);
 
             return selectedText;
         }
