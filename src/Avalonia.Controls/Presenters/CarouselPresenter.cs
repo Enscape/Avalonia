@@ -23,10 +23,9 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
-        public static readonly DirectProperty<CarouselPresenter, int> SelectedIndexProperty =
-            SelectingItemsControl.SelectedIndexProperty.AddOwner<CarouselPresenter>(
-                o => o.SelectedIndex,
-                (o, v) => o.SelectedIndex = v);
+        public static readonly StyledProperty<int> SelectedIndexProperty =
+            SelectingItemsControl.SelectedIndexProperty.AddOwner<CarouselPresenter>(new(
+                coerce: CoerceSelectedIndex));
 
         /// <summary>
         /// Defines the <see cref="PageTransition"/> property.
@@ -34,7 +33,6 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
             Carousel.PageTransitionProperty.AddOwner<CarouselPresenter>();
 
-        private int _selectedIndex = -1;
         private Task? _currentTransition;
         private int _queuedTransitionIndex = -1;
 
@@ -64,22 +62,13 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public int SelectedIndex
         {
-            get
-            {
-                return _selectedIndex;
-            }
+            get => GetValue(SelectedIndexProperty);
+            set => SetValue(SelectedIndexProperty, value);
+        }
 
-            set
-            {
-                var old = SelectedIndex;
-                var effective = (value >= 0 && value < Items?.Cast<object>().Count()) ? value : -1;
-
-                if (old != effective)
-                {
-                    _selectedIndex = effective;
-                    RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue);
-                }
-            }
+        private static int CoerceSelectedIndex(AvaloniaObject sender, int value)
+        {
+            return (value >= 0 && value < sender.GetValue(ItemsProperty)?.Cast<object>().Count()) ? value : -1;
         }
 
         /// <summary>

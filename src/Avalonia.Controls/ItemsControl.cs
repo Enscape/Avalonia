@@ -35,8 +35,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
-        public static readonly DirectProperty<ItemsControl, IEnumerable?> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, IEnumerable?>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
+        public static readonly StyledProperty<IEnumerable?> ItemsProperty =
+            AvaloniaProperty.Register<ItemsControl, IEnumerable?>(nameof(Items));
 
         /// <summary>
         /// Defines the <see cref="ItemContainerTheme"/> property.

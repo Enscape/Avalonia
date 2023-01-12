@@ -3,17 +3,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
-using Avalonia.Reactive;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -33,19 +29,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.
         /// </summary>
-        public static readonly DirectProperty<TreeView, object?> SelectedItemProperty =
-            SelectingItemsControl.SelectedItemProperty.AddOwner<TreeView>(
-                o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v);
+        public static readonly StyledProperty<object?> SelectedItemProperty =
+            SelectingItemsControl.SelectedItemProperty.AddOwner<TreeView>();
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        public static readonly DirectProperty<TreeView, IList> SelectedItemsProperty =
-            AvaloniaProperty.RegisterDirect<TreeView, IList>(
-                nameof(SelectedItems),
-                o => o.SelectedItems,
-                (o, v) => o.SelectedItems = v);
+        public static readonly StyledProperty<IList> SelectedItemsProperty =
+            AvaloniaProperty.Register<TreeView, IList>(nameof(SelectedItems),
+                coerce: CoerceSelectedItems);
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
@@ -54,16 +46,20 @@ namespace Avalonia.Controls
             ListBox.SelectionModeProperty.AddOwner<TreeView>();
 
         private static readonly IList Empty = Array.Empty<object>();
-        private object? _selectedItem;
-        private IList? _selectedItems;
         private bool _syncingSelectedItems;
+
+        public TreeView()
+        {
+            SelectedItems = new AvaloniaList<object>();
+        }
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeView"/> class.
         /// </summary>
         static TreeView()
         {
-            // HACK: Needed or SelectedItem property will not be found in Release build.
+            SelectedItemProperty.Changed.AddClassHandler<TreeView>((s, e) => s.OnSelectedItemChanged(e.GetNewValue<object?>()));
+            SelectedItemsProperty.Changed.AddClassHandler<TreeView>((s, e) => s.OnSelectedItemsChanged(e));
         }
 
         /// <summary>
@@ -108,24 +104,22 @@ namespace Avalonia.Controls
         /// </remarks>
         public object? SelectedItem
         {
-            get => _selectedItem;
-            set
+            get => GetValue(SelectedItemProperty);
+            set => SetValue(SelectedItemProperty, value);
+        }
+
+        private void OnSelectedItemChanged(object? value)
+        {
+            if (value != null)
             {
-                var selectedItems = SelectedItems;
-
-                SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
-
-                if (value != null)
+                if (SelectedItems.Count != 1 || SelectedItems[0] != value)
                 {
-                    if (selectedItems.Count != 1 || selectedItems[0] != value)
-                    {                        
-                        SelectSingleItem(value);                        
-                    }
+                    SelectSingleItem(value);
                 }
-                else if (SelectedItems.Count > 0)
-                {
-                    SelectedItems.Clear();
-                }
+            }
+            else if (SelectedItems.Count > 0)
+            {
+                SelectedItems.Clear();
             }
         }
 
@@ -134,29 +128,41 @@ namespace Avalonia.Controls
         /// </summary>
         public IList SelectedItems
         {
-            get
-            {
-                if (_selectedItems == null)
-                {
-                    _selectedItems = new AvaloniaList<object>();
-                    SubscribeToSelectedItems();
-                }
+            get => GetValue(SelectedItemsProperty);
+            set => SetValue(SelectedItemsProperty, value);
+        }
 
-                return _selectedItems;
+        private static IList CoerceSelectedItems(AvaloniaObject sender, IList value)
+        {
+            if (value?.IsFixedSize == true || value?.IsReadOnly == true)
+            {
+                throw new NotSupportedException(
+                    "Cannot use a fixed size or read-only collection as SelectedItems.");
+            }
+            if (value == null)
+            {
+                throw new NotSupportedException("SelectedItems cannot be null");
+            }
+            return value;
+        }
+
+        private void OnSelectedItemsChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var (oldValue, newValue) = e.GetOldAndNewValue<IList?>();
+
+            if (oldValue is INotifyCollectionChanged oldIncc)
+            {
+                oldIncc.CollectionChanged -= SelectedItemsCollectionChanged;
             }
 
-            set
+            if (newValue is INotifyCollectionChanged newIncc)
             {
-                if (value?.IsFixedSize == true || value?.IsReadOnly == true)
-                {
-                    throw new NotSupportedException(
-                        "Cannot use a fixed size or read-only collection as SelectedItems.");
-                }
-
-                UnsubscribeFromSelectedItems();
-                _selectedItems = value ?? new AvaloniaList<object>();
-                SubscribeToSelectedItems();
+                newIncc.CollectionChanged += SelectedItemsCollectionChanged;
             }
+
+            SelectedItemsCollectionChanged(
+                newValue,
+                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         /// <summary>
@@ -219,21 +225,6 @@ namespace Avalonia.Controls
             SelectedItems.Clear();
         }
 
-        /// <summary>
-        /// Subscribes to the <see cref="SelectedItems"/> CollectionChanged event, if any.
-        /// </summary>
-        private void SubscribeToSelectedItems()
-        {
-            if (_selectedItems is INotifyCollectionChanged incc)
-            {
-                incc.CollectionChanged += SelectedItemsCollectionChanged;
-            }
-
-            SelectedItemsCollectionChanged(
-                _selectedItems,
-                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        }
-
         private void SelectSingleItem(object item)
         {
             _syncingSelectedItems = true;
@@ -241,7 +232,7 @@ namespace Avalonia.Controls
             SelectedItems.Add(item);
             _syncingSelectedItems = false;
 
-            SetAndRaise(SelectedItemProperty, ref _selectedItem, item);            
+            SelectedItem = item;
         }
 
         /// <summary>
@@ -280,14 +271,11 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            var selectedIndex = SelectedItems.IndexOf(_selectedItem);
+                            var selectedIndex = SelectedItems.IndexOf(SelectedItem);
 
                             if (selectedIndex == -1)
                             {
-                                var old = _selectedItem;
-                                _selectedItem = SelectedItems[0];
-
-                                RaisePropertyChanged(SelectedItemProperty, old, _selectedItem);
+                                SelectedItem = SelectedItems[0];
                             }
                         }
                     }
@@ -333,10 +321,7 @@ namespace Avalonia.Controls
 
                     if (SelectedItem != SelectedItems[0] && !_syncingSelectedItems)
                     {
-                        var oldItem = SelectedItem;
-                        var item = SelectedItems[0];
-                        _selectedItem = item;
-                        RaisePropertyChanged(SelectedItemProperty, oldItem, item);
+                        SelectedItem = SelectedItems[0];
                     }
 
                     added = e.NewItems;
@@ -376,20 +361,10 @@ namespace Avalonia.Controls
 
             if (SelectedItem == null && !_syncingSelectedItems)
             {
-                SetAndRaise(SelectedItemProperty, ref _selectedItem, items[0]);
+                SelectedItem = items[0];
             }
         }
 
-        /// <summary>
-        /// Unsubscribes from the <see cref="SelectedItems"/> CollectionChanged event, if any.
-        /// </summary>
-        private void UnsubscribeFromSelectedItems()
-        {
-            if (_selectedItems is INotifyCollectionChanged incc)
-            {
-                incc.CollectionChanged -= SelectedItemsCollectionChanged;
-            }
-        }
         (bool handled, IInputElement? next) ICustomKeyboardNavigation.GetNext(IInputElement element,
             NavigationDirection direction)
         {
@@ -397,8 +372,8 @@ namespace Avalonia.Controls
             {
                 if (!this.IsVisualAncestorOf((Visual)element))
                 {
-                    var result = _selectedItem != null ?
-                        ItemContainerGenerator.Index!.ContainerFromItem(_selectedItem) :
+                    var result = SelectedItem != null ?
+                        ItemContainerGenerator.Index!.ContainerFromItem(SelectedItem) :
                         ItemContainerGenerator.ContainerFromIndex(0);
                     
                     return (result != null, result); // SelectedItem may not be in the treeview.

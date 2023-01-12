@@ -37,8 +37,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
-        public static readonly DirectProperty<ItemsRepeater, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<ItemsRepeater>(o => o.Items, (o, v) => o.Items = v);
+        public static readonly StyledProperty<IEnumerable?> ItemsProperty =
+            ItemsControl.ItemsProperty.AddOwner<ItemsRepeater>();
 
         /// <summary>
         /// Defines the <see cref="Layout"/> property.
@@ -61,7 +61,6 @@ namespace Avalonia.Controls
         private readonly ViewManager _viewManager;
         private readonly ViewportManager _viewportManager;
         private readonly TargetWeakEventSubscriber<ItemsRepeater, EventArgs> _layoutWeakSubscriber;
-        private IEnumerable? _items;
         private VirtualizingLayoutContext? _layoutContext;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private bool _isLayoutInProgress;
@@ -114,8 +113,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IEnumerable? Items
         {
-            get => _items;
-            set => SetAndRaise(ItemsProperty, ref _items, value);
+            get => GetValue(ItemsProperty);
+            set => SetValue(ItemsProperty, value);
         }
 
         /// <summary>

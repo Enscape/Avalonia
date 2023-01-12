@@ -7,7 +7,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.LogicalTree;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -19,8 +18,8 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
-        public static readonly DirectProperty<ItemsPresenterBase, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<ItemsPresenterBase>(o => o.Items, (o, v) => o.Items = v);
+        public static readonly StyledProperty<IEnumerable?> ItemsProperty =
+            ItemsControl.ItemsProperty.AddOwner<ItemsPresenterBase>();
 
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
@@ -40,7 +39,6 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
             ItemsControl.DisplayMemberBindingProperty.AddOwner<ItemsPresenterBase>();
         
-        private IEnumerable? _items;
         private IDisposable? _itemsSubscription;
         private bool _createdPanel;
         private IItemContainerGenerator? _generator;
@@ -52,6 +50,7 @@ namespace Avalonia.Controls.Presenters
         static ItemsPresenterBase()
         {
             TemplatedParentProperty.Changed.AddClassHandler<ItemsPresenterBase>((x,e) => x.TemplatedParentChanged(e));
+            ItemsProperty.Changed.AddClassHandler<ItemsPresenterBase>((x, e) => x.OnItemsChanged(e.GetNewValue<IEnumerable?>()));
         }
 
         /// <summary>
@@ -59,27 +58,23 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public IEnumerable? Items
         {
-            get
+            get => GetValue(ItemsProperty);
+            set => SetValue(ItemsProperty, value);
+        }
+
+        private void OnItemsChanged(IEnumerable? value)
+        {
+            _itemsSubscription?.Dispose();
+            _itemsSubscription = null;
+
+            if (!IsHosted && _createdPanel && value is INotifyCollectionChanged incc)
             {
-                return _items;
+                _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
             }
 
-            set
+            if (_createdPanel)
             {
-                _itemsSubscription?.Dispose();
-                _itemsSubscription = null;
-
-                if (!IsHosted && _createdPanel && value is INotifyCollectionChanged incc)
-                {
-                    _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
-                }
-
-                SetAndRaise(ItemsProperty, ref _items, value);
-
-                if (_createdPanel)
-                {
-                    ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-                }
+                ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
 

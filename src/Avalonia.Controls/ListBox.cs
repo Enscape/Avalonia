@@ -7,7 +7,6 @@ using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -32,14 +31,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        public static readonly new DirectProperty<SelectingItemsControl, IList?> SelectedItemsProperty =
-            SelectingItemsControl.SelectedItemsProperty;
+        public static readonly StyledProperty<IList?> SelectedItemsProperty =
+            AvaloniaProperty.Register<ListBox, IList?>(nameof(SelectedItems));
 
         /// <summary>
         /// Defines the <see cref="Selection"/> property.
         /// </summary>
-        public static readonly new DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
-            SelectingItemsControl.SelectionProperty;
+        public static readonly StyledProperty<ISelectionModel> SelectionProperty =
+            AvaloniaProperty.Register<ListBox, ISelectionModel>(nameof(Selection));
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
@@ -55,6 +54,11 @@ namespace Avalonia.Controls
 
         private IScrollable? _scroll;
 
+        public ListBox()
+        {
+            Selection = base.Selection;
+        }
+
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
         /// </summary>
@@ -62,7 +66,12 @@ namespace Avalonia.Controls
         {
             ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
             VirtualizationModeProperty.OverrideDefaultValue<ListBox>(ItemVirtualizationMode.Simple);
+            SelectedItemsProperty.Changed.AddClassHandler<ListBox>((s, e) => s.OnSelectedItemsChanged(e.GetNewValue<IList?>()));
+            SelectionProperty.Changed.AddClassHandler<ListBox>((s, e) => s.OnSelectionChanged(e.GetNewValue<ISelectionModel>()));
         }
+
+        private void OnSelectedItemsChanged(IList? value) => base.SelectedItems = value;
+        private void OnSelectionChanged(ISelectionModel value) => base.Selection = value;
 
         /// <summary>
         /// Gets the scroll information for the <see cref="ListBox"/>.
@@ -76,8 +85,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public new IList? SelectedItems
         {
-            get => base.SelectedItems;
-            set => base.SelectedItems = value;
+            get => GetValue(SelectedItemsProperty);
+            set => SetValue(SelectedItemsProperty, value);
         }
 
         /// <inheritdoc/>

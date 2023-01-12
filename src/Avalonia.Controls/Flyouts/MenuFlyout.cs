@@ -10,22 +10,20 @@ namespace Avalonia.Controls
     {
         public MenuFlyout()
         {
-            _items = new AvaloniaList<object>();
+            Items = new AvaloniaList<object>();
         }
 
         /// <summary>
         /// Defines the <see cref="Items"/> property
         /// </summary>
-        public static readonly DirectProperty<MenuFlyout, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<MenuFlyout>(x => x.Items,
-                (x, v) => x.Items = v);
+        public static readonly StyledProperty<IEnumerable?> ItemsProperty =
+            ItemsControl.ItemsProperty.AddOwner<MenuFlyout>();
 
         /// <summary>
         /// Defines the <see cref="ItemTemplate"/> property
         /// </summary>
-        public static readonly DirectProperty<MenuFlyout, IDataTemplate?> ItemTemplateProperty =
-            AvaloniaProperty.RegisterDirect<MenuFlyout, IDataTemplate?>(nameof(ItemTemplate),
-                x => x.ItemTemplate, (x, v) => x.ItemTemplate = v);
+        public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
+            AvaloniaProperty.Register<MenuFlyout, IDataTemplate?>(nameof(ItemTemplate));
 
         public Classes FlyoutPresenterClasses => _classes ??= new Classes();
 
@@ -35,8 +33,8 @@ namespace Avalonia.Controls
         [Content]
         public IEnumerable? Items
         {
-            get => _items;
-            set => SetAndRaise(ItemsProperty, ref _items, value);
+            get => GetValue(ItemsProperty);
+            set => SetValue(ItemsProperty, value);
         }
 
         /// <summary>
@@ -44,13 +42,11 @@ namespace Avalonia.Controls
         /// </summary>
         public IDataTemplate? ItemTemplate
         {
-            get => _itemTemplate;
-            set => SetAndRaise(ItemTemplateProperty, ref _itemTemplate, value);
+            get => GetValue(ItemTemplateProperty);
+            set => SetValue(ItemTemplateProperty, value);
         }
 
         private Classes? _classes;
-        private IEnumerable? _items;
-        private IDataTemplate? _itemTemplate;
 
         protected override Control CreatePresenter()
         {

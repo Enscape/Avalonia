@@ -13,6 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
+    [DebuggerDisplay("{DebugText}")]
     public class TextBlock : Control, IInlineHost
     {
         /// <summary>
@@ -198,7 +199,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
-        [DebuggerDisplay("{DebugText}")]
         public string? Text
         {
             get => GetValue(TextProperty);
