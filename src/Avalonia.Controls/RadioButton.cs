@@ -150,7 +150,7 @@ namespace Avalonia.Controls
             sender.OnGroupNameChanged(oldGroupName, newGroupName);
         }
 
-        private void OnGroupNameChanged(string oldGroupName, string newGroupName)
+        private void OnGroupNameChanged(string? oldGroupName, string? newGroupName)
         {
             if (!string.IsNullOrEmpty(oldGroupName))
             {

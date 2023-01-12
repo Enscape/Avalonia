@@ -59,12 +59,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
-        public static readonly DirectProperty<Expander, bool> IsExpandedProperty =
-            AvaloniaProperty.RegisterDirect<Expander, bool>(
-                nameof(IsExpanded),
-                o => o.IsExpanded,
-                (o, v) => o.IsExpanded = v,
-                defaultBindingMode: Data.BindingMode.TwoWay);
+        public static readonly StyledProperty<bool> IsExpandedProperty =
+            AvaloniaProperty.Register<Expander, bool>(nameof(IsExpanded),
+                defaultBindingMode: BindingMode.TwoWay,
+                coerce: CoerceIsExpanded);
 
         /// <summary>
         /// Defines the <see cref="Collapsed"/> event.
@@ -77,8 +75,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Collapsing"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> CollapsingEvent =
-            RoutedEvent.Register<Expander, RoutedEventArgs>(
+        public static readonly RoutedEvent<CancellableRoutedEventArgs> CollapsingEvent =
+            RoutedEvent.Register<Expander, CancellableRoutedEventArgs>(
                 nameof(Collapsing),
                 RoutingStrategies.Bubble);
 
@@ -93,13 +91,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Expanding"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> ExpandingEvent =
-            RoutedEvent.Register<Expander, RoutedEventArgs>(
+        public static readonly RoutedEvent<CancellableRoutedEventArgs> ExpandingEvent =
+            RoutedEvent.Register<Expander, CancellableRoutedEventArgs>(
                 nameof(Expanding),
                 RoutingStrategies.Bubble);
 
         private bool _ignorePropertyChanged = false;
-        private bool _isExpanded;
         private CancellationTokenSource? _lastTransitionCts;
 
         /// <summary>
@@ -134,50 +131,23 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsExpanded
         {
-            get => _isExpanded;
-            set
+            get => GetValue(IsExpandedProperty);
+            set => SetValue(IsExpandedProperty, value);
+        }
+
+        private static bool CoerceIsExpanded(AvaloniaObject sender, bool value)
+        {
+            if (value != sender.GetValue(IsExpandedProperty) && sender is Interactive interactive)
             {
-                // It is important here that IsExpanded is a direct property so events can be invoked
-                // BEFORE the property system gets notified of updated values. This is because events
-                // may be canceled by external code.
-                if (_isExpanded != value)
+                var args = new CancellableRoutedEventArgs { RoutedEvent = value ? ExpandingEvent : CollapsingEvent };
+                interactive.RaiseEvent(args);
+                if (args.Cancel)
                 {
-                    RoutedEventArgs eventArgs;
-
-                    if (value)
-                    {
-                        eventArgs = new RoutedEventArgs(ExpandingEvent, this);
-                        OnExpanding(eventArgs);
-                    }
-                    else
-                    {
-                        eventArgs = new RoutedEventArgs(CollapsingEvent, this);
-                        OnCollapsing(eventArgs);
-                    }
-
-                    if (eventArgs.Handled)
-                    {
-                        // If the event was externally handled (canceled) we must still notify the value has changed.
-                        // This property changed notification will update any external code observing this property that itself may have set the new value.
-                        // We are essentially reverted any external state change along with ignoring the IsExpanded property set.
-                        // Remember IsExpanded is usually controlled by a ToggleButton in the control theme.
-                        _ignorePropertyChanged = true;
-
-                        RaisePropertyChanged(
-                            IsExpandedProperty,
-                            oldValue: value,
-                            newValue: _isExpanded,
-                            BindingPriority.LocalValue,
-                            isEffectiveValue: true);
-
-                        _ignorePropertyChanged = false;
-                    }
-                    else
-                    {
-                        SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
-                    }
+                    return !value;
                 }
             }
+
+            return value;
         }
 
         /// <summary>
@@ -196,7 +166,7 @@ namespace Avalonia.Controls
         /// The event args <see cref="RoutedEventArgs.Handled"/> property may be set to true to cancel the event
         /// and keep the control open (expanded).
         /// </remarks>
-        public event EventHandler<RoutedEventArgs>? Collapsing
+        public event EventHandler<CancellableRoutedEventArgs>? Collapsing
         {
             add => AddHandler(CollapsingEvent, value);
             remove => RemoveHandler(CollapsingEvent, value);
@@ -218,7 +188,7 @@ namespace Avalonia.Controls
         /// The event args <see cref="RoutedEventArgs.Handled"/> property may be set to true to cancel the event
         /// and keep the control closed (collapsed).
         /// </remarks>
-        public event EventHandler<RoutedEventArgs>? Expanding
+        public event EventHandler<CancellableRoutedEventArgs>? Expanding
         {
             add => AddHandler(ExpandingEvent, value);
             remove => RemoveHandler(ExpandingEvent, value);
