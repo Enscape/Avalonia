@@ -248,7 +248,7 @@ namespace Avalonia.Controls.Presenters
         private void CreatePanel()
         {
             Panel = ItemsPanel.Build();
-            Panel.SetValue(TemplatedParentProperty, TemplatedParent);
+            Panel.TemplatedParent = TemplatedParent;
 
             LogicalChildren.Clear();
             VisualChildren.Clear();

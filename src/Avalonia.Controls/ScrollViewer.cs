@@ -17,30 +17,6 @@ namespace Avalonia.Controls
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
         /// <summary>
-        /// Defines the <see cref="CanHorizontallyScroll"/> property.
-        /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, bool> CanHorizontallyScrollProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, bool>(
-                nameof(CanHorizontallyScroll),
-                o => o.CanHorizontallyScroll);
-
-        /// <summary>
-        /// Defines the <see cref="CanVerticallyScroll"/> property.
-        /// </summary>
-        /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
-        /// <see cref="ScrollContentPresenter"/> in the control's template.
-        /// </remarks>
-        public static readonly DirectProperty<ScrollViewer, bool> CanVerticallyScrollProperty =
-            AvaloniaProperty.RegisterDirect<ScrollViewer, bool>(
-                nameof(CanVerticallyScroll),
-                o => o.CanVerticallyScroll);
-
-        /// <summary>
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollViewer, Size> ExtentProperty =
@@ -213,9 +189,6 @@ namespace Avalonia.Controls
         /// </summary>
         static ScrollViewer()
         {
-            HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer, ScrollBarVisibility>((x, e) => x.ScrollBarVisibilityChanged(e));
-            VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer, ScrollBarVisibility>((x, e) => x.ScrollBarVisibilityChanged(e));
-
             OffsetProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.CalculatedPropertiesChanged());
         }
 
@@ -626,11 +599,8 @@ namespace Avalonia.Controls
             return false;
         }
 
-        private static Vector CoerceOffset(AvaloniaObject sender, Vector value)
-        {
-            var scrollViewer = (ScrollViewer)sender;
-            return CoerceOffset(scrollViewer.Extent, scrollViewer.Viewport, scrollViewer.Offset);
-        }
+        private static Vector CoerceOffset(AvaloniaObject sender, Vector value) =>
+            CoerceOffset(sender.GetValue(ExtentProperty), sender.GetValue(ViewportProperty), sender.GetValue(OffsetProperty));
 
         internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)
         {
@@ -670,30 +640,6 @@ namespace Avalonia.Controls
         private void LogicalScrollInvalidated(object? sender, EventArgs e)
         {
             CalculatedPropertiesChanged();
-        }
-
-        private void ScrollBarVisibilityChanged(AvaloniaPropertyChangedEventArgs<ScrollBarVisibility> e)
-        {
-            var wasEnabled = e.OldValue.GetValueOrDefault() != ScrollBarVisibility.Disabled;
-            var isEnabled = e.NewValue.GetValueOrDefault() != ScrollBarVisibility.Disabled;
-
-            if (wasEnabled != isEnabled)
-            {
-                if (e.Property == HorizontalScrollBarVisibilityProperty)
-                {
-                    RaisePropertyChanged(
-                        CanHorizontallyScrollProperty,
-                        wasEnabled,
-                        isEnabled);
-                }
-                else if (e.Property == VerticalScrollBarVisibilityProperty)
-                {
-                    RaisePropertyChanged(
-                        CanVerticallyScrollProperty,
-                        wasEnabled,
-                        isEnabled);
-                }
-            }
         }
 
         private void CalculatedPropertiesChanged()

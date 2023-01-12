@@ -10,20 +10,10 @@
               RowDefinitions="*,Auto">
           <ScrollContentPresenter Name="PART_ContentPresenter"
                                   Padding="{TemplateBinding Padding}"
-                                  Background="{TemplateBinding Background}"
-                                  CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
-                                  CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
-                                  Content="{TemplateBinding Content}"
-                                  Extent="{TemplateBinding Extent,
-                                                           Mode=TwoWay}"
-                                  IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}"
-                                  Viewport="{TemplateBinding Viewport,
-                                                             Mode=TwoWay}"
-                                  Offset="{TemplateBinding Offset,
-                                                           Mode=TwoWay}">
+                                  Background="{TemplateBinding Background}">
             <ScrollContentPresenter.GestureRecognizers>
-              <ScrollGestureRecognizer CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
-                                       CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}" />
+              <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
+                                       CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}" />
             </ScrollContentPresenter.GestureRecognizers>
           </ScrollContentPresenter>
           <ScrollBar Name="horizontalScrollBar"
@@ -101,16 +91,7 @@
             <Path Data="M 0 0 L 4 4 L 8 0 Z" />
           </RepeatButton>
           <ScrollContentPresenter Name="PART_ContentPresenter"
-                                  Margin="{TemplateBinding Padding}"
-                                  CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
-                                  CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
-                                  Content="{TemplateBinding Content}"
-                                  Extent="{TemplateBinding Extent,
-                                                           Mode=TwoWay}"
-                                  Viewport="{TemplateBinding Viewport,
-                                                             Mode=TwoWay}"
-                                  Offset="{TemplateBinding Offset,
-                                                           Mode=TwoWay}" />
+                                  Margin="{TemplateBinding Padding}" />
         </DockPanel>
       </ControlTemplate>
     </Setter>

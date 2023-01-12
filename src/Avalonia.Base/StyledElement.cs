@@ -149,7 +149,7 @@ namespace Avalonia
 
         private static string? CoerceName(AvaloniaObject sender, string? baseValue)
         {
-            if (((StyledElement)sender)._stylesApplied)
+            if (((StyledElement)sender)._stylesApplied && baseValue != sender.GetValue(NameProperty))
             {
                 throw new InvalidOperationException("Cannot set Name : styled element already styled.");
             }

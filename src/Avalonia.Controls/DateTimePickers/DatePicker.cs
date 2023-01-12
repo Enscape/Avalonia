@@ -97,8 +97,8 @@ namespace Avalonia.Controls
         {
             PseudoClasses.Set(":hasnodate", true);
             var now = DateTimeOffset.Now;
-            MinYear = new DateTimeOffset(now.Date.Year - 100, 1, 1, 0, 0, 0, now.Offset);
             MaxYear = new DateTimeOffset(now.Date.Year + 100, 12, 31, 0, 0, 0, now.Offset);
+            MinYear = new DateTimeOffset(now.Date.Year - 100, 1, 1, 0, 0, 0, now.Offset);
         }
 
         static DatePicker()

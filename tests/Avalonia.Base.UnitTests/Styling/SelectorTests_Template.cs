@@ -35,7 +35,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 .Template()
                 .OfType<Border>();
 
-            border.SetValue(StyledElement.TemplatedParentProperty, null);
+            border.TemplatedParent = null;
 
             Assert.Equal(SelectorMatchResult.NeverThisInstance, selector.Match(border).Result);
         }

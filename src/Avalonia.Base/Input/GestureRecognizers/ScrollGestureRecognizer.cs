@@ -5,7 +5,7 @@ using Avalonia.Threading;
 namespace Avalonia.Input.GestureRecognizers
 {
     public class ScrollGestureRecognizer 
-        : StyledElement, // It's not an "element" in any way, shape or form, but TemplateBinding refuse to work otherwise
+        : AvaloniaObject,
             IGestureRecognizer
     {
         private bool _scrolling;

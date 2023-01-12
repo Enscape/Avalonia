@@ -14,8 +14,7 @@ namespace Avalonia.Styling
         ISetterInstance
     {
         private readonly StyledElement _target;
-        private readonly StyledPropertyBase<T>? _styledProperty;
-        private readonly DirectPropertyBase<T>? _directProperty;
+        private readonly StyledPropertyBase<T> _styledProperty;
         private readonly T _value;
         private IDisposable? _subscription;
         private State _state;
@@ -30,43 +29,19 @@ namespace Avalonia.Styling
             _value = value;
         }
 
-        public PropertySetterInstance(
-            StyledElement target,
-            DirectPropertyBase<T> property,
-            T value)
-        {
-            _target = target;
-            _directProperty = property;
-            _value = value;
-        }
-
         private bool IsActive => _state == State.Active;
 
         public void Start(bool hasActivator)
         {
             if (hasActivator)
             {
-                if (_styledProperty is not null)
-                {
-                    _subscription = _target.Bind(_styledProperty, this, BindingPriority.StyleTrigger);
-                }
-                else
-                {
-                    _subscription = _target.Bind(_directProperty!, this);
-                }
+                _subscription = _target.Bind(_styledProperty, this, BindingPriority.StyleTrigger);
             }
             else
             {
                 var target = (AvaloniaObject) _target;
                 
-                if (_styledProperty is not null)
-                {
-                    _subscription = target.SetValue(_styledProperty!, _value, BindingPriority.Style);
-                }
-                else
-                {
-                    target.SetValue(_directProperty!, _value);
-                }
+                _subscription = target.SetValue(_styledProperty!, _value, BindingPriority.Style);
             }
         }
 
@@ -102,14 +77,7 @@ namespace Avalonia.Styling
             }
             else if (IsActive)
             {
-                if (_styledProperty is object)
-                {
-                    _target.ClearValue(_styledProperty);
-                }
-                else
-                {
-                    _target.ClearValue(_directProperty!);
-                }
+                _target.ClearValue(_styledProperty);
             }
 
             base.Dispose();

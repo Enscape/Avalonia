@@ -116,7 +116,7 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override void RouteClearValue(AvaloniaObject o)
         {
-            o.ClearValue<TValue>(this);
+            AvaloniaObject.ThrowOnDirectPropertyWrite(Name);
         }
 
         /// <inheritdoc/>
@@ -136,22 +136,7 @@ namespace Avalonia
             object? value,
             BindingPriority priority)
         {
-            var v = TryConvert(value);
-
-            if (v.HasValue)
-            {
-                o.SetValue<TValue>(this, (TValue)v.Value!);
-            }
-            else if (v.Type == BindingValueType.UnsetValue)
-            {
-                o.ClearValue(this);
-            }
-            else if (v.HasError)
-            {
-                throw v.Error!;
-            }
-
-            return null;
+            return AvaloniaObject.ThrowOnDirectPropertyWrite(Name);
         }
 
         /// <summary>
@@ -165,7 +150,7 @@ namespace Avalonia
             IObservable<object?> source,
             BindingPriority priority)
         {
-            return o.Bind(this, source);
+            return AvaloniaObject.ThrowOnDirectPropertyWrite(Name);
         }
     }
 }

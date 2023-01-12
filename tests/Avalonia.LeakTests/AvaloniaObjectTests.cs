@@ -66,23 +66,13 @@ namespace Avalonia.LeakTests
         private class Class1 : AvaloniaObject
         {
             public static readonly DirectProperty<Class1, string> FooProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>(
-                    "Foo",
-                    o => o.Foo,
-                    (o, v) => o.Foo = v,
-                    unsetValue: "unset");
-
-            private string _foo = "initial2";
+                AvaloniaProperty.RegisterDirect<Class1, string>("Foo", o => o.Foo);
 
             static Class1()
             {
             }
 
-            public string Foo
-            {
-                get { return _foo; }
-                set { SetAndRaise(FooProperty, ref _foo, value); }
-            }
+            public string Foo { get; } = "initial2";
         }
     }
 }

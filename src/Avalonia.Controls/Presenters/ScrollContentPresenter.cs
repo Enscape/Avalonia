@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using System.Linq;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -62,6 +63,7 @@ namespace Avalonia.Controls.Presenters
         private Control? _anchorElement;
         private Rect _anchorElementBounds;
         private bool _isAnchorElementDirty;
+        private CompositeDisposable? _ownerSubscriptions;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -215,6 +217,44 @@ namespace Avalonia.Controls.Presenters
             }
 
             return result;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            var owner = this.FindAncestorOfType<ScrollViewer>();
+
+            if (owner == null)
+            {
+                return;
+            }
+
+            var subscriptionDisposables = new IDisposable?[]
+            {
+                IfUnset(CanHorizontallyScrollProperty, p => Bind(p, owner.GetObservable(ScrollViewer.HorizontalScrollBarVisibilityProperty).Select(NotDisabled))),
+                IfUnset(CanVerticallyScrollProperty, p => Bind(p, owner.GetObservable(ScrollViewer.VerticalScrollBarVisibilityProperty).Select(NotDisabled))),
+                IfUnset(OffsetProperty, p => Bind(p, owner.GetBindingObservable(ScrollViewer.OffsetProperty))),
+                IfUnset(IsScrollChainingEnabledProperty, p => Bind(p, owner.GetBindingObservable(ScrollViewer.IsScrollChainingEnabledProperty))),
+                IfUnset(ContentProperty, p => Bind(p, owner.GetBindingObservable(ContentProperty))),
+
+                // read-only properties with private setters:
+                owner.GetObservable(ScrollViewer.ExtentProperty).Subscribe(v => Extent = v),
+                owner.GetObservable(ScrollViewer.ViewportProperty).Subscribe(v => Viewport = v)
+            }.Where(d => d != null).Cast<IDisposable>().ToArray();
+
+            _ownerSubscriptions = new CompositeDisposable(subscriptionDisposables);
+
+            static bool NotDisabled(ScrollBarVisibility v) => v != ScrollBarVisibility.Disabled;
+
+            IDisposable? IfUnset<T>(T property, Func<T, IDisposable> func) where T : AvaloniaProperty => GetValueStore().IsSet(property) ? null : func(property);
+        }
+
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            _ownerSubscriptions?.Dispose();
+            base.OnDetachedFromVisualTree(e);
         }
 
         /// <inheritdoc/>

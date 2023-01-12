@@ -147,7 +147,7 @@ namespace Avalonia
             return property switch
             {
                 StyledPropertyBase<T> styled => target.Bind(styled, source, priority),
-                DirectPropertyBase<T> direct => target.Bind(direct, source),
+                DirectPropertyBase<T> => AvaloniaObject.ThrowOnDirectPropertyWrite(property.Name),
                 _ => throw new NotSupportedException("Unsupported AvaloniaProperty type."),
             };
         }
@@ -171,7 +171,7 @@ namespace Avalonia
             return property switch
             {
                 StyledPropertyBase<T> styled => target.Bind(styled, source, priority),
-                DirectPropertyBase<T> direct => target.Bind(direct, source),
+                DirectPropertyBase<T> => AvaloniaObject.ThrowOnDirectPropertyWrite(property.Name),
                 _ => throw new NotSupportedException("Unsupported AvaloniaProperty type."),
             };
         }

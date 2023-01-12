@@ -29,17 +29,10 @@
                                   Grid.RowSpan="2"
                                   Grid.ColumnSpan="2"
                                   Background="{TemplateBinding Background}"
-                                  CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
-                                  CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
-                                  Content="{TemplateBinding Content}"
-                                  Extent="{TemplateBinding Extent, Mode=TwoWay}"
-                                  Padding="{TemplateBinding Padding}"
-                                  Offset="{TemplateBinding Offset, Mode=TwoWay}"
-                                  Viewport="{TemplateBinding Viewport, Mode=TwoWay}"
-                                  IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}">
+                                  Padding="{TemplateBinding Padding}">
             <ScrollContentPresenter.GestureRecognizers>
-              <ScrollGestureRecognizer CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
-                                       CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}" />
+              <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
+                                       CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}" />
             </ScrollContentPresenter.GestureRecognizers>
           </ScrollContentPresenter>
           <ScrollBar Name="PART_HorizontalScrollBar"

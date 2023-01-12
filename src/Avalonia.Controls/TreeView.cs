@@ -139,11 +139,7 @@ namespace Avalonia.Controls
                 throw new NotSupportedException(
                     "Cannot use a fixed size or read-only collection as SelectedItems.");
             }
-            if (value == null)
-            {
-                throw new NotSupportedException("SelectedItems cannot be null");
-            }
-            return value;
+            return value!;
         }
 
         private void OnSelectedItemsChanged(AvaloniaPropertyChangedEventArgs e)
@@ -295,7 +291,7 @@ namespace Avalonia.Controls
                         MarkContainerSelected(container, false);
                     }
 
-                    if (SelectedItems.Count > 0)
+                    if (SelectedItems?.Count > 0)
                     {
                         SelectedItemsAdded(SelectedItems);
 

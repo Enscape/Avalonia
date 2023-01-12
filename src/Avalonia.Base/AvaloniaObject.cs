@@ -18,6 +18,8 @@ namespace Avalonia
     /// </remarks>
     public class AvaloniaObject : IAvaloniaObjectDebug, INotifyPropertyChanged
     {
+        private const string DirectPropertyReadOnlyMessage = "A DirectProperty is always read-only and cannot be modified through the property system.";
+
         private readonly ValueStore _values;
         private AvaloniaObject? _inheritanceParent;
         private PropertyChangedEventHandler? _inpcChanged;
@@ -135,8 +137,8 @@ namespace Avalonia
                 case StyledPropertyBase<T> styled:
                     ClearValue(styled);
                     break;
-                case DirectPropertyBase<T> direct:
-                    ClearValue(direct);
+                case DirectPropertyBase<T>:
+                    ThrowOnDirectPropertyWrite(property.Name);
                     break;
                 default:
                     throw new NotSupportedException("Unsupported AvaloniaProperty type.");
@@ -153,19 +155,6 @@ namespace Avalonia
             VerifyAccess();
 
             _values?.ClearLocalValue(property);
-        }
-
-        /// <summary>
-        /// Clears a <see cref="AvaloniaProperty"/>'s local value.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        public void ClearValue<T>(DirectPropertyBase<T> property)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            VerifyAccess();
-
-            var p = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
-            p.InvokeSetter(this, p.GetUnsetValue(GetType()));
         }
 
         /// <summary>
@@ -333,22 +322,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Sets a <see cref="AvaloniaProperty"/> value.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value.</param>
-        public void SetValue<T>(DirectPropertyBase<T> property, T value)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            VerifyAccess();
-
-            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
-            LogPropertySet(property, value, BindingPriority.LocalValue);
-            SetDirectValueUnchecked(property, value);
-        }
-
-        /// <summary>
         /// Binds a <see cref="AvaloniaProperty"/> to an observable.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -431,83 +404,21 @@ namespace Avalonia
             return _values.AddBinding(property, source, priority);
         }
 
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public IDisposable Bind<T>(
-            DirectPropertyBase<T> property,
-            IObservable<object?> source)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            VerifyAccess();
+        internal static IDisposable ThrowOnDirectPropertyWrite(string name) => throw new ArgumentException($"The property {name} is readonly.");
 
-            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
+        [Obsolete(DirectPropertyReadOnlyMessage, true)]
+        public IDisposable Bind<T>(DirectPropertyBase<T> property, IObservable<object?> source) => ThrowOnDirectPropertyWrite(property.Name);
 
-            if (property.IsReadOnly)
-            {
-                throw new ArgumentException($"The property {property.Name} is readonly.");
-            }
+        [Obsolete(DirectPropertyReadOnlyMessage, true)]
+        public IDisposable Bind<T>(DirectPropertyBase<T> property, IObservable<T> source) => ThrowOnDirectPropertyWrite(property.Name);
 
-            return _values.AddBinding(property, source);
-        }
+        [Obsolete(DirectPropertyReadOnlyMessage, true)]
+        public IDisposable Bind<T>(DirectPropertyBase<T> property,IObservable<BindingValue<T>> source) => ThrowOnDirectPropertyWrite(property.Name);
 
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public IDisposable Bind<T>(
-            DirectPropertyBase<T> property,
-            IObservable<T> source)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            VerifyAccess();
-
-            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
-
-            if (property.IsReadOnly)
-            {
-                throw new ArgumentException($"The property {property.Name} is readonly.");
-            }
-
-            return _values.AddBinding(property, source);
-        }
-
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public IDisposable Bind<T>(
-            DirectPropertyBase<T> property,
-            IObservable<BindingValue<T>> source)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            VerifyAccess();
-
-            property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
-
-            if (property.IsReadOnly)
-            {
-                throw new ArgumentException($"The property {property.Name} is readonly.");
-            }
-
-            return _values.AddBinding(property, source);
-        }
+        [Obsolete(DirectPropertyReadOnlyMessage, true)]
+        public void SetValue<T>(DirectPropertyBase<T> property, T value) => ThrowOnDirectPropertyWrite(property.Name);
+        [Obsolete(DirectPropertyReadOnlyMessage, true)]
+        public void ClearValue<T>(DirectPropertyBase<T> property) => ThrowOnDirectPropertyWrite(property.Name);
 
         /// <summary>
         /// Coerces the specified <see cref="AvaloniaProperty"/>.
