@@ -124,10 +124,10 @@ namespace Avalonia.Base.UnitTests.Styling
             {
                 VisualChildren.Add(new Border
                 {
-                    [TemplatedParentProperty] = this,
+                    TemplatedParent = this,
                     Child = new TextBlock
                     {
-                        [TemplatedParentProperty] = this,
+                        TemplatedParent = this,
                     },
                 });
             }

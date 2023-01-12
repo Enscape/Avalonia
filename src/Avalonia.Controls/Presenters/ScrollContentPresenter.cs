@@ -238,9 +238,9 @@ namespace Avalonia.Controls.Presenters
                 IfUnset(IsScrollChainingEnabledProperty, p => Bind(p, owner.GetBindingObservable(ScrollViewer.IsScrollChainingEnabledProperty))),
                 IfUnset(ContentProperty, p => Bind(p, owner.GetBindingObservable(ContentProperty))),
 
-                // read-only properties with private setters:
-                owner.GetObservable(ScrollViewer.ExtentProperty).Subscribe(v => Extent = v),
-                owner.GetObservable(ScrollViewer.ViewportProperty).Subscribe(v => Viewport = v)
+                // read-only properties on ScrollViewer with internal setters:
+                this.GetObservable(ExtentProperty).Subscribe(v => owner.Extent = v),
+                this.GetObservable(ViewportProperty).Subscribe(v => owner.Viewport = v)
             }.Where(d => d != null).Cast<IDisposable>().ToArray();
 
             _ownerSubscriptions = new CompositeDisposable(subscriptionDisposables);

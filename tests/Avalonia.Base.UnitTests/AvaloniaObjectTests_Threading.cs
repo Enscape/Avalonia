@@ -92,42 +92,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void DirectProperty_SetValue_Should_Throw()
-        {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
-            {
-                var target = new Class1();
-                _threading.CurrentThreadIsLoopThread = false;
-                Assert.Throws<InvalidOperationException>(() => target.SetValue(Class1.DirectProperty, "foo"));
-            }
-        }
-
-        [Fact]
-        public void Setting_DirectProperty_Binding_Should_Throw()
-        {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
-            {
-                var target = new Class1();
-                _threading.CurrentThreadIsLoopThread = false;
-                Assert.Throws<InvalidOperationException>(() =>
-                    target.Bind(
-                        Class1.DirectProperty,
-                        new BehaviorSubject<string>("foo")));
-            }
-        }
-
-        [Fact]
-        public void DirectProperty_ClearValue_Should_Throw()
-        {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
-            {
-                var target = new Class1();
-                _threading.CurrentThreadIsLoopThread = false;
-                Assert.Throws<InvalidOperationException>(() => target.ClearValue(Class1.DirectProperty));
-            }
-        }
-
-        [Fact]
         public void DirectProperty_IsSet_Should_Throw()
         {
             using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
@@ -144,7 +108,7 @@ namespace Avalonia.Base.UnitTests
                 AvaloniaProperty.Register<Class1, string>("Foo", "foodefault");
 
             public static readonly DirectProperty<Class1, string> DirectProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>("Qux", _ => null, (o, v) => { });
+                AvaloniaProperty.RegisterDirect<Class1, string>("Qux", _ => null);
         }
 
         private class ThreadingInterface : IPlatformThreadingInterface

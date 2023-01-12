@@ -18,10 +18,12 @@ namespace Avalonia.Media
 
         public GeometryGroup()
         {
-            Children = new GeometryCollection
-            {
-                Parent = this
-            };
+            Children = new GeometryCollection();
+        }
+
+        static GeometryGroup()
+        {
+            ChildrenProperty.Changed.AddClassHandler<GeometryGroup>(OnChildrenChanged);
         }
 
         /// <summary>
@@ -56,11 +58,19 @@ namespace Avalonia.Media
             return result;
         }
 
-        protected void OnChildrenChanged(GeometryCollection oldChildren, GeometryCollection newChildren)
+        private static void OnChildrenChanged(GeometryGroup sender, AvaloniaPropertyChangedEventArgs e)
         {
-            oldChildren.Parent = null;
+            var (oldChildren, newChildren) = e.GetOldAndNewValue<GeometryCollection>();
 
-            newChildren.Parent = this;
+            if (oldChildren is not null)
+            {
+                oldChildren.Parent = null;
+            }
+
+            if (newChildren is not null)
+            {
+                newChildren.Parent = sender;
+            }
         }
 
         protected override IGeometryImpl? CreateDefiningGeometry()

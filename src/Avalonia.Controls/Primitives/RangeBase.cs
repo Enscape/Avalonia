@@ -65,14 +65,7 @@ namespace Avalonia.Controls.Primitives
 
         private static double CoerceMinimum(AvaloniaObject sender, double value)
         {
-            var range = (RangeBase)sender;
-
-            if (!ValidateDouble(value))
-            {
-                return range.Minimum;
-            }
-
-            return value;
+            return ValidateDouble(value) ? value : sender.GetValue(MinimumProperty);
         }
 
         private void OnMinimumChanged()
@@ -95,14 +88,9 @@ namespace Avalonia.Controls.Primitives
 
         private static double CoerceMaximum(AvaloniaObject sender, double value)
         {
-            var range = (RangeBase)sender;
-
-            if (!ValidateDouble(value))
-            {
-                return range.Maximum;
-            }
-
-            return range.ValidateMaximum(value);
+            return ValidateDouble(value) 
+                ? Math.Max(value, sender.GetValue(MinimumProperty)) 
+                : sender.GetValue(MaximumProperty);
         }
 
         private void OnMaximumChanged()
@@ -124,14 +112,9 @@ namespace Avalonia.Controls.Primitives
 
         private static double CoerceValue(AvaloniaObject sender, double value)
         {
-            var range = (RangeBase)sender;
-
-            if (!ValidateDouble(value))
-            {
-                return range.Value;
-            }
-
-            return range.ValidateValue(value);
+            return ValidateDouble(value)
+                ? MathUtilities.Clamp(value, sender.GetValue(MinimumProperty), sender.GetValue(MaximumProperty))
+                : sender.GetValue(ValueProperty);
         }
 
         public double SmallChange
@@ -150,8 +133,8 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnInitialized();
 
-            Maximum = ValidateMaximum(Maximum);
-            Value = ValidateValue(Value);
+            CoerceValue(MaximumProperty);
+            CoerceValue(ValueProperty);
         }
 
         /// <summary>
@@ -161,26 +144,6 @@ namespace Avalonia.Controls.Primitives
         private static bool ValidateDouble(double value)
         {
             return !double.IsInfinity(value) && !double.IsNaN(value);
-        }
-
-        /// <summary>
-        /// Validates/coerces the <see cref="Maximum"/> property.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The coerced value.</returns>
-        private double ValidateMaximum(double value)
-        {
-            return Math.Max(value, Minimum);
-        }
-
-        /// <summary>
-        /// Validates/coerces the <see cref="Value"/> property.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The coerced value.</returns>
-        private double ValidateValue(double value)
-        {
-            return MathUtilities.Clamp(value, Minimum, Maximum);
         }
     }
 }

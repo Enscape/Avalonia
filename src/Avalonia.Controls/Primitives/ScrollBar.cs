@@ -5,6 +5,9 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.Controls.Metadata;
+using Avalonia.VisualTree;
+using Avalonia.Reactive;
+using System.Linq;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -79,6 +82,7 @@ namespace Avalonia.Controls.Primitives
         private Button? _pageDownButton;
         private DispatcherTimer? _timer;
         private bool _isExpanded;
+        private CompositeDisposable _ownerSubscriptions;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -87,6 +91,9 @@ namespace Avalonia.Controls.Primitives
         {
             Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
+            OrientationProperty.Changed.AddClassHandler<ScrollBar>((x, e) => x.BindToOwner()); // there's no way to manually refresh bindings, so reapply them
+
+            FocusableProperty.OverrideMetadata<ScrollBar>(new(false));
         }
 
         /// <summary>
@@ -178,6 +185,53 @@ namespace Avalonia.Controls.Primitives
             };
 
             SetValue(IsVisibleProperty, isVisible);
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            BindToOwner();
+        }
+
+        private void BindToOwner()
+        {
+            _ownerSubscriptions?.Dispose();
+
+            var owner = this.FindAncestorOfType<ScrollViewer>();
+
+            if (owner == null)
+            {
+                return;
+            }
+
+            var visibilitySource = Orientation == Orientation.Horizontal ? ScrollViewer.HorizontalScrollBarVisibilityProperty : ScrollViewer.VerticalScrollBarVisibilityProperty;
+
+            var subscriptionDisposables = new IDisposable?[]
+            {
+                IfUnset(MaximumProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ScrollBarMaximumProperty).Select(ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(ValueProperty, p => new CompositeDisposable(
+                        Bind(p, owner.GetObservable(ScrollViewer.OffsetProperty).Select(ExtractOrdinate), BindingPriority.Template),
+                        this.GetObservable(ValueProperty).Subscribe(v => SetScrollViewerOffset(owner, v)))),
+                IfUnset(ViewportSizeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.ViewportProperty).Select(ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(VisibilityProperty, p => Bind(p, owner.GetObservable(visibilitySource), BindingPriority.Template)),
+                IfUnset(AllowAutoHideProperty, p => Bind(p, owner.GetObservable(ScrollViewer.AllowAutoHideProperty), BindingPriority.Template)),
+                IfUnset(LargeChangeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.LargeChangeProperty).Select(ExtractOrdinate), BindingPriority.Template)),
+                IfUnset(SmallChangeProperty, p => Bind(p, owner.GetObservable(ScrollViewer.SmallChangeProperty).Select(ExtractOrdinate), BindingPriority.Template))
+            }.Where(d => d != null).Cast<IDisposable>().ToArray();
+
+            _ownerSubscriptions = new CompositeDisposable(subscriptionDisposables);
+
+            IDisposable? IfUnset<T>(T property, Func<T, IDisposable> func) where T : AvaloniaProperty => GetValueStore().IsSet(property) ? null : func(property);
+        }
+
+        private double ExtractOrdinate(Vector v) => Orientation == Orientation.Horizontal ? v.X : v.Y;
+        private double ExtractOrdinate(Size v) => Orientation == Orientation.Horizontal ? v.Width : v.Height;
+        private void SetScrollViewerOffset(ScrollViewer viewer, double value) => viewer.SetValue(ScrollViewer.OffsetProperty, Orientation == Orientation.Horizontal ? viewer.Offset.WithX(value) : viewer.Offset.WithY(value), BindingPriority.Template);
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            _ownerSubscriptions?.Dispose();
+            base.OnDetachedFromVisualTree(e);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

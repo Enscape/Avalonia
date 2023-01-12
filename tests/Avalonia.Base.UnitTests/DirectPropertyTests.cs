@@ -9,8 +9,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new DirectProperty<Class1, string>(
                 "test", 
-                o => null, 
-                null,
+                o => null,
                 new DirectPropertyMetadata<string>());
 
             Assert.True(target.IsDirect);
@@ -20,7 +19,7 @@ namespace Avalonia.Base.UnitTests
         public void AddOwnered_Property_Should_Equal_Original()
         {
             var p1 = Class1.FooProperty;
-            var p2 = p1.AddOwner<Class2>(o => null, (o, v) => { });
+            var p2 = p1.AddOwner<Class2>(o => null);
 
             Assert.NotSame(p1, p2);
             Assert.True(p1.Equals(p2));
@@ -32,7 +31,7 @@ namespace Avalonia.Base.UnitTests
         public void AddOwnered_Property_Should_Have_OwnerType_Set()
         {
             var p1 = Class1.FooProperty;
-            var p2 = p1.AddOwner<Class2>(o => null, (o, v) => { });
+            var p2 = p1.AddOwner<Class2>(o => null);
 
             Assert.Equal(typeof(Class2), p2.OwnerType);
         }
@@ -41,7 +40,7 @@ namespace Avalonia.Base.UnitTests
         public void AddOwnered_Properties_Should_Share_Observables()
         {
             var p1 = Class1.FooProperty;
-            var p2 = p1.AddOwner<Class2>(o => null, (o, v) => { });
+            var p2 = p1.AddOwner<Class2>(o => null);
 
             Assert.Same(p1.Changed, p2.Changed);
         }
@@ -49,7 +48,7 @@ namespace Avalonia.Base.UnitTests
         private class Class1 : AvaloniaObject
         {
             public static readonly DirectProperty<Class1, string> FooProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>(nameof(Foo), o => o.Foo, (o, v) => o.Foo = v);
+                AvaloniaProperty.RegisterDirect<Class1, string>(nameof(Foo), o => o.Foo);
 
             private string _foo = "foo";
 
