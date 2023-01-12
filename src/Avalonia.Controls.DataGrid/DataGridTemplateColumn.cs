@@ -5,41 +5,28 @@
 
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
-using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
     public class DataGridTemplateColumn : DataGridColumn
     {
-        private IDataTemplate _cellTemplate;
-
-        public static readonly DirectProperty<DataGridTemplateColumn, IDataTemplate> CellTemplateProperty =
-            AvaloniaProperty.RegisterDirect<DataGridTemplateColumn, IDataTemplate>(
-                nameof(CellTemplate),
-                o => o.CellTemplate,
-                (o, v) => o.CellTemplate = v);
+        public static readonly StyledProperty<IDataTemplate> CellTemplateProperty =
+            AvaloniaProperty.Register<DataGridTemplateColumn, IDataTemplate>(nameof(CellTemplate));
 
         [Content]
         public IDataTemplate CellTemplate
         {
-            get { return _cellTemplate; }
-            set { SetAndRaise(CellTemplateProperty, ref _cellTemplate, value); }
+            get => GetValue(CellTemplateProperty);
+            set => SetValue(CellTemplateProperty, value);
         }
-
-        private IDataTemplate _cellEditingCellTemplate;
 
         /// <summary>
         /// Defines the <see cref="CellEditingTemplate"/> property.
         /// </summary>
-        public static readonly DirectProperty<DataGridTemplateColumn, IDataTemplate> CellEditingTemplateProperty =
-                AvaloniaProperty.RegisterDirect<DataGridTemplateColumn, IDataTemplate>(
-                    nameof(CellEditingTemplate),
-                    o => o.CellEditingTemplate,
-                    (o, v) => o.CellEditingTemplate = v);
+        public static readonly StyledProperty<IDataTemplate> CellEditingTemplateProperty =
+                AvaloniaProperty.Register<DataGridTemplateColumn, IDataTemplate>(nameof(CellEditingTemplate));
 
         /// <summary>
         /// Gets or sets the <see cref="IDataTemplate"/> which is used for the editing mode of the current <see cref="DataGridCell"/>
@@ -52,8 +39,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public IDataTemplate CellEditingTemplate
         {
-            get => _cellEditingCellTemplate;
-            set => SetAndRaise(CellEditingTemplateProperty, ref _cellEditingCellTemplate, value);
+            get => GetValue(CellEditingTemplateProperty);
+            set => SetValue(CellEditingTemplateProperty, value);
         }
 
         private bool _forceGenerateCellFromTemplate;

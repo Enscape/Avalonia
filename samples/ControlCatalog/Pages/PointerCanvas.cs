@@ -92,35 +92,32 @@ public class PointerCanvas : Control
         }
     }
 
-    private int _threadSleep;
-    public static DirectProperty<PointerCanvas, int> ThreadSleepProperty =
-        AvaloniaProperty.RegisterDirect<PointerCanvas, int>(nameof(ThreadSleep), c => c.ThreadSleep, (c, v) => c.ThreadSleep = v);
+    public static StyledProperty<int> ThreadSleepProperty =
+        AvaloniaProperty.Register<PointerCanvas, int>(nameof(ThreadSleep));
 
     public int ThreadSleep
     {
-        get => _threadSleep;
-        set => SetAndRaise(ThreadSleepProperty, ref _threadSleep, value);
+        get => GetValue(ThreadSleepProperty);
+        set => SetValue(ThreadSleepProperty, value);
     }
 
-    private bool _drawOnlyPoints;
-    public static DirectProperty<PointerCanvas, bool> DrawOnlyPointsProperty =
-        AvaloniaProperty.RegisterDirect<PointerCanvas, bool>(nameof(DrawOnlyPoints), c => c.DrawOnlyPoints, (c, v) => c.DrawOnlyPoints = v);
+    public static StyledProperty<bool> DrawOnlyPointsProperty =
+        AvaloniaProperty.Register<PointerCanvas, bool>(nameof(DrawOnlyPoints));
 
     public bool DrawOnlyPoints
     {
-        get => _drawOnlyPoints;
-        set => SetAndRaise(DrawOnlyPointsProperty, ref _drawOnlyPoints, value);
+        get => GetValue(DrawOnlyPointsProperty);
+        set => SetValue(DrawOnlyPointsProperty, value);
     }
 
-    private string? _status;
-    public static DirectProperty<PointerCanvas, string?> StatusProperty =
-        AvaloniaProperty.RegisterDirect<PointerCanvas, string?>(nameof(DrawOnlyPoints), c => c.Status, (c, v) => c.Status = v,
+    public static StyledProperty<string?> StatusProperty =
+        AvaloniaProperty.Register<PointerCanvas, string?>(nameof(DrawOnlyPoints),
             defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
     public string? Status
     {
-        get => _status;
-        set => SetAndRaise(StatusProperty, ref _status, value);
+        get => GetValue(StatusProperty);
+        set => SetValue(StatusProperty, value);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -165,9 +162,9 @@ Twist: {_lastProperties?.Twist}";
     {
         _events++;
 
-        if (_threadSleep != 0)
+        if (ThreadSleep != 0)
         {
-            Thread.Sleep(_threadSleep);
+            Thread.Sleep(ThreadSleep);
         }
         InvalidateVisual();
 
@@ -198,7 +195,7 @@ Twist: {_lastProperties?.Twist}";
     {
         context.FillRectangle(Brushes.White, Bounds);
         foreach (var pt in _pointers.Values)
-            pt.Render(context, _drawOnlyPoints);
+            pt.Render(context, DrawOnlyPoints);
         base.Render(context);
     }
 

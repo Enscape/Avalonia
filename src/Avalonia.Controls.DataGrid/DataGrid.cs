@@ -152,8 +152,6 @@ namespace Avalonia.Controls
         private double _verticalOffset;
         private byte _verticalScrollChangesIgnored;
 
-        private IEnumerable _items;
-
         public event EventHandler<ScrollEventArgs> HorizontalScroll;
         public event EventHandler<ScrollEventArgs> VerticalScroll;
 
@@ -573,14 +571,8 @@ namespace Avalonia.Controls
             set { SetValue(DropLocationIndicatorTemplateProperty, value); }
         }
 
-        private int _selectedIndex = -1;
-        private object _selectedItem;
-
-        public static readonly DirectProperty<DataGrid, int> SelectedIndexProperty =
-            AvaloniaProperty.RegisterDirect<DataGrid, int>(
-                nameof(SelectedIndex),
-                o => o.SelectedIndex,
-                (o, v) => o.SelectedIndex = v,
+        public static readonly StyledProperty<int> SelectedIndexProperty =
+            AvaloniaProperty.Register<DataGrid, int>(nameof(SelectedIndex), -1,
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -591,15 +583,12 @@ namespace Avalonia.Controls
         /// </returns>
         public int SelectedIndex
         {
-            get { return _selectedIndex; }
-            set { SetAndRaise(SelectedIndexProperty, ref _selectedIndex, value); }
+            get => GetValue(SelectedIndexProperty);
+            set => SetValue(SelectedIndexProperty, value);
         }
 
-        public static readonly DirectProperty<DataGrid, object> SelectedItemProperty =
-            AvaloniaProperty.RegisterDirect<DataGrid, object>(
-                nameof(SelectedItem),
-                o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v,
+        public static readonly StyledProperty<object> SelectedItemProperty =
+            AvaloniaProperty.Register<DataGrid, object>(nameof(SelectedItem),
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -607,8 +596,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object SelectedItem
         {
-            get { return _selectedItem; }
-            set { SetAndRaise(SelectedItemProperty, ref _selectedItem, value); }
+            get => GetValue(SelectedItemProperty);
+            set => SetValue(SelectedItemProperty, value);
         }
 
         public static readonly StyledProperty<DataGridClipboardCopyMode> ClipboardCopyModeProperty =
@@ -654,19 +643,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Identifies the ItemsSource dependency property.
         /// </summary>
-        public static readonly DirectProperty<DataGrid, IEnumerable> ItemsProperty =
-            AvaloniaProperty.RegisterDirect<DataGrid, IEnumerable>(
-                nameof(Items),
-                o => o.Items,
-                (o, v) => o.Items = v);
+        public static readonly StyledProperty<IEnumerable> ItemsProperty =
+            AvaloniaProperty.Register<DataGrid, IEnumerable>(nameof(Items));
 
         /// <summary>
         /// Gets or sets a collection that is used to generate the content of the control.
         /// </summary>
         public IEnumerable Items
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => GetValue(ItemsProperty); 
+            set => SetValue(ItemsProperty, value);
         }
 
         public static readonly StyledProperty<bool> AreRowDetailsFrozenProperty =

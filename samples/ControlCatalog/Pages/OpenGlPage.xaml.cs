@@ -8,7 +8,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
-using Avalonia.Platform.Interop;
 using Avalonia.Threading;
 using static Avalonia.OpenGL.GlConsts;
 // ReSharper disable StringLiteralTypo
@@ -22,61 +21,49 @@ namespace ControlCatalog.Pages
 
     public class OpenGlPageControl : OpenGlControlBase
     {
-        private float _yaw;
-
-        public static readonly DirectProperty<OpenGlPageControl, float> YawProperty =
-            AvaloniaProperty.RegisterDirect<OpenGlPageControl, float>("Yaw", o => o.Yaw, (o, v) => o.Yaw = v);
+        public static readonly StyledProperty<float> YawProperty =
+            AvaloniaProperty.Register<OpenGlPageControl, float>("Yaw");
 
         public float Yaw
         {
-            get => _yaw;
-            set => SetAndRaise(YawProperty, ref _yaw, value);
+            get => GetValue(YawProperty);
+            set => SetValue(YawProperty,value);
         }
 
-        private float _pitch;
-
-        public static readonly DirectProperty<OpenGlPageControl, float> PitchProperty =
-            AvaloniaProperty.RegisterDirect<OpenGlPageControl, float>("Pitch", o => o.Pitch, (o, v) => o.Pitch = v);
+        public static readonly StyledProperty<float> PitchProperty =
+            AvaloniaProperty.Register<OpenGlPageControl, float>("Pitch");
 
         public float Pitch
         {
-            get => _pitch;
-            set => SetAndRaise(PitchProperty, ref _pitch, value);
+            get => GetValue(PitchProperty);
+            set => SetValue(PitchProperty, value);
         }
 
-
-        private float _roll;
-
-        public static readonly DirectProperty<OpenGlPageControl, float> RollProperty =
-            AvaloniaProperty.RegisterDirect<OpenGlPageControl, float>("Roll", o => o.Roll, (o, v) => o.Roll = v);
+        public static readonly StyledProperty<float> RollProperty =
+            AvaloniaProperty.Register<OpenGlPageControl, float>("Roll");
 
         public float Roll
         {
-            get => _roll;
-            set => SetAndRaise(RollProperty, ref _roll, value);
+            get => GetValue(RollProperty); 
+            set => SetValue(RollProperty, value);
         }
 
-
-        private float _disco;
-
-        public static readonly DirectProperty<OpenGlPageControl, float> DiscoProperty =
-            AvaloniaProperty.RegisterDirect<OpenGlPageControl, float>("Disco", o => o.Disco, (o, v) => o.Disco = v);
+        public static readonly StyledProperty<float> DiscoProperty =
+            AvaloniaProperty.Register<OpenGlPageControl, float>("Disco");
 
         public float Disco
         {
-            get => _disco;
-            set => SetAndRaise(DiscoProperty, ref _disco, value);
+            get => GetValue(DiscoProperty);
+            set => SetValue(DiscoProperty, value);
         }
 
-        private string _info = string.Empty;
-
-        public static readonly DirectProperty<OpenGlPageControl, string> InfoProperty =
-            AvaloniaProperty.RegisterDirect<OpenGlPageControl, string>("Info", o => o.Info, (o, v) => o.Info = v);
+        public static readonly StyledProperty<string> InfoProperty =
+            AvaloniaProperty.Register<OpenGlPageControl, string>("Info", string.Empty);
 
         public string Info
         {
-            get => _info;
-            private set => SetAndRaise(InfoProperty, ref _info, value);
+            get => GetValue(InfoProperty);
+            set => SetValue(InfoProperty, value);
         }
 
         static OpenGlPageControl()
@@ -346,7 +333,7 @@ namespace ControlCatalog.Pages
 
 
             var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, 1, 0));
-            var model = Matrix4x4.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
+            var model = Matrix4x4.CreateFromYawPitchRoll(Yaw, Pitch, Roll);
             var modelLoc = GL.GetUniformLocationString(_shaderProgram, "uModel");
             var viewLoc = GL.GetUniformLocationString(_shaderProgram, "uView");
             var projectionLoc = GL.GetUniformLocationString(_shaderProgram, "uProjection");
@@ -360,12 +347,12 @@ namespace ControlCatalog.Pages
             GL.Uniform1f(maxYLoc, _maxY);
             GL.Uniform1f(minYLoc, _minY);
             GL.Uniform1f(timeLoc, (float)St.Elapsed.TotalSeconds);
-            GL.Uniform1f(discoLoc, _disco);
+            GL.Uniform1f(discoLoc, Disco);
             CheckError(GL);
             GL.DrawElements(GL_TRIANGLES, _indices.Length, GL_UNSIGNED_SHORT, IntPtr.Zero);
 
             CheckError(GL);
-            if (_disco > 0.01)
+            if (Disco > 0.01)
                 Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
         }
     }
