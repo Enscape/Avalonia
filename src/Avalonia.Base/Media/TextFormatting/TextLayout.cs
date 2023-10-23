@@ -300,12 +300,20 @@ namespace Avalonia.Media.TextFormatting
 
         public IEnumerable<Rect> HitTestTextRange(int start, int length)
         {
+            foreach (var bounds in HitTestTextRangeBounds(start, length))
+            {
+                yield return bounds.Rectangle;
+            }
+        }
+
+        public IEnumerable<TextBounds> HitTestTextRangeBounds(int start, int length)
+        {
             if (start + length <= 0)
             {
-                return Array.Empty<Rect>();
+                return Array.Empty<TextBounds>();
             }
 
-            var result = new List<Rect>(_textLines.Length);
+            var result = new List<TextBounds>(_textLines.Length);
 
             var currentY = 0d;
 
@@ -321,27 +329,23 @@ namespace Avalonia.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(start, length);
 
-                if (textBounds.Count > 0)
+                for (var i = 0; i < textBounds.Count; i++)
                 {
-                    foreach (var bounds in textBounds)
+                    var bounds = textBounds[i];
+
+                    if (currentY != bounds.Rectangle.Top)
                     {
-                        Rect? last = result.Count > 0 ? result[result.Count - 1] : null;
-
-                        if (last.HasValue && MathUtilities.AreClose(last.Value.Right, bounds.Rectangle.Left) && MathUtilities.AreClose(last.Value.Top, currentY))
-                        {
-                            result[result.Count - 1] = last.Value.WithWidth(last.Value.Width + bounds.Rectangle.Width);
-                        }
-                        else
-                        {
-                            result.Add(bounds.Rectangle.WithY(currentY));
-                        }
-
-                        foreach (var runBounds in bounds.TextRunBounds)
-                        {
-                            start += runBounds.Length;
-                            length -= runBounds.Length;
-                        }
+                        bounds.Rectangle = bounds.Rectangle.WithY(currentY);
                     }
+
+                    result.Add(bounds);
+
+                    for (var j = 0; j < bounds.TextRunBounds.Count; j++)
+                    {
+                        var runLength = bounds.TextRunBounds[j].Length;
+                        start += runLength;
+                        length -= runLength;
+                    } 
                 }
 
                 if (textLine.FirstTextSourceIndex + textLine.Length >= start + length)
