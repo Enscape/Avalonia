@@ -815,14 +815,29 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Use_DisplayMemberBinding()
         {
+            const int SourceCount = 100;
+
             using var app = Start();
-            var target = CreateTarget(
-                itemsSource: new[] { "Foo" },
-                displayMemberBinding: new Binding("Length"));
 
-            var container = GetContainer(target);
-            var textBlock = Assert.IsType<TextBlock>(container.Child);
+            var scroll = new ScrollViewer() { Height = 30 };
 
+            var target = CreateTarget<ItemsControl>(
+                itemsSource: Enumerable.Repeat("Foo", SourceCount).ToArray(),
+                displayMemberBinding: new Binding(nameof(string.Length)),
+                itemsPanel: new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
+                dataTemplates: [new FuncDataTemplate<string>(delegate { Assert.Fail("Inherited DataTemplate was used instead of DisplayMemberBinding"); return null; })],
+                scrollViewer: scroll);
+
+            Assert.NotEqual(SourceCount, target.GetRealizedContainers().Count());
+
+            var textBlock = Assert.IsType<TextBlock>(GetContainer(target).Child);
+            Assert.Equal(textBlock.Text, "3");
+
+            // Invoke container recycling
+            scroll.Offset = new(0, scroll.Extent.Height);
+            Layout(target);
+
+            textBlock = Assert.IsType<TextBlock>(GetContainer(target, SourceCount).Child);
             Assert.Equal(textBlock.Text, "3");
         }
 
@@ -1016,14 +1031,14 @@ namespace Avalonia.Controls.UnitTests
             // Virtualization is required
             var itemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
 
+            var scroll = new ScrollViewer();
+
             // Create an ItemsControl which uses containers, and provide a scroll viewer.
             var target = CreateTarget<ItemsControlWithContainer>(
                 items: items,
                 itemsPanel: itemsPanel,
-                scrollViewer: true);
-            var scroll = target.FindAncestorOfType<ScrollViewer>();
+                scrollViewer: scroll);
 
-            Assert.NotNull(scroll);
             Assert.Equal(10, target.GetRealizedContainers().Count());
 
             // Scroll so that half a container is visible: an extra container is generated.
@@ -1085,7 +1100,7 @@ namespace Avalonia.Controls.UnitTests
             ITemplate<Panel?>? itemsPanel = null,
             IEnumerable<IDataTemplate>? dataTemplates = null,
             bool performLayout = true,
-            bool scrollViewer = false)
+            ScrollViewer? scrollViewer = null)
                 where T : ItemsControl, new()
         {
             var target = new T
@@ -1106,8 +1121,16 @@ namespace Avalonia.Controls.UnitTests
             if (itemsPanel is not null)
                 target.ItemsPanel = itemsPanel;
 
-            var scroll = scrollViewer ? new ScrollViewer { Content = target } : null;
-            var root = CreateRoot(scroll ?? (Control)target);
+            TestRoot root;
+            if (scrollViewer != null)
+            {
+                scrollViewer.Content = target;
+                root = CreateRoot(scrollViewer);
+            }
+            else
+            {
+                root = CreateRoot(target);
+            }
 
             if (dataTemplates is not null)
             {
