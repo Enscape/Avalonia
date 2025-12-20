@@ -1,3 +1,6 @@
+using Avalonia.Controls.Documents;
+using Avalonia.Platform;
+
 namespace Avalonia.Controls;
 
 /// <summary>
@@ -7,11 +10,14 @@ namespace Avalonia.Controls;
 /// </summary>
 public interface IPlatformTextScaleable
 {
-    bool IsPlatformTextScalingEnabled { get; }
+    TextScaler? TextScaler { get; }
+
+    IPlatformSettings? PlatformSettings { get; }
+
     void OnPlatformTextScalingChanged();
 
     /// <summary>
-    /// Scales a font size according to the current system text scaling rules and the value of <see cref="IsPlatformTextScalingEnabled"/>.
+    /// Scales a font size according to the current system text scaling rules and the value of <see cref="TextScaler"/>.
     /// </summary>
     double GetScaledFontSize(double baseFontSize);
 }

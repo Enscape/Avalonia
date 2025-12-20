@@ -825,6 +825,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the height of each line in the TextBox, or null if no layout information is available.
+        /// </summary>
+        /// <returns></returns>
+        public double? GetLineHeight()
+        {
+            if (_presenter == null)
+                return null;
+
+            var scaledFontSize = ((IPlatformTextScaleable)_presenter).GetScaledFontSize(_presenter.FontSize);
+
+            return double.IsNaN(LineHeight) ? scaledFontSize : LineHeight * (scaledFontSize / _presenter.FontSize);
+        }
+
+        /// <summary>
         /// Raised when content is being copied to the clipboard
         /// </summary>
         public event EventHandler<RoutedEventArgs>? CopyingToClipboard

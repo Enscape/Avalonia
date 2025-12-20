@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -327,8 +326,6 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_textBox.ContextFlyout is PopupFlyoutBase flyout)
                 {
-                    var verticalOffset = ((IPlatformTextScaleable)_textBox).GetScaledFontSize(double.IsNaN(_textBox.LineHeight) ? _textBox.FontSize : _textBox.LineHeight) +
-                                         ContextMenuPadding;
 
                     TextSelectionHandle? handle = null;
 
@@ -349,6 +346,7 @@ namespace Avalonia.Controls.Primitives
 
                     if (handle != null)
                     {
+                        var verticalOffset = (_textBox.GetLineHeight() ?? 0) + ContextMenuPadding;
                         var topLeft = ToTextBox(handle.GetTopLeft());
                         flyout.VerticalOffset = topLeft.Y - verticalOffset;
                         flyout.HorizontalOffset = topLeft.X;

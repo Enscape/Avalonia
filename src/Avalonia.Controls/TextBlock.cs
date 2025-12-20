@@ -8,6 +8,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -24,10 +25,10 @@ namespace Avalonia.Controls
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
         /// <summary>
-        /// Defines the <see cref="IsPlatformTextScalingEnabled"/> property.
+        /// Defines the <see cref="TextScaler"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> IsPlatformTextScalingEnabledProperty =
-            TextElement.IsPlatformTextScalingEnabledProperty.AddOwner<TextBlock>();
+        public static readonly StyledProperty<TextScaler?> TextScalerProperty =
+            TextElement.TextScalerProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
@@ -198,11 +199,10 @@ namespace Avalonia.Controls
         /// </summary>
         public TextLayout TextLayout => _textLayout ??= CreateTextLayout(Text);
 
-        /// <inheritdoc cref="TextElement.IsPlatformTextScalingEnabled"/>
-        public bool IsPlatformTextScalingEnabled
+        public TextScaler? TextScaler
         {
-            get => GetValue(IsPlatformTextScalingEnabledProperty);
-            set => SetValue(IsPlatformTextScalingEnabledProperty, value);
+            get => GetValue(TextScalerProperty);
+            set => SetValue(TextScalerProperty, value);
         }
 
         /// <summary>
@@ -251,10 +251,9 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc cref="IPlatformTextScaleable.GetScaledFontSize(double)"/>
-        protected double GetScaledFontSize(double baseFontSize) => !double.IsNaN(baseFontSize) && IsPlatformTextScalingEnabled && 
-            TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
-        
+        protected double GetScaledFontSize(double baseFontSize) => TextScaler?.GetScaledFontSize(this, baseFontSize) ?? baseFontSize;
         double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => GetScaledFontSize(baseFontSize);
+        IPlatformSettings? IPlatformTextScaleable.PlatformSettings => TopLevel.GetTopLevel(this)?.PlatformSettings;
 
         /// <summary>
         /// Gets or sets the font style used to draw the control's text.
@@ -673,7 +672,7 @@ namespace Avalonia.Controls
 
         void IPlatformTextScaleable.OnPlatformTextScalingChanged()
         {
-            if (IsPlatformTextScalingEnabled)
+            if (TextScaler != null)
             {
                 InvalidateMeasure();
             }
@@ -686,7 +685,7 @@ namespace Avalonia.Controls
         protected virtual TextLayout CreateTextLayout(string? text)
         {
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-
+            
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
                 FontFeatures,
@@ -694,10 +693,12 @@ namespace Avalonia.Controls
                 TextDecorations,
                 Foreground);
 
+            var fontScaleFactor = defaultProperties.FontRenderingEmSize / FontSize;
+
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
-                defaultProperties, TextWrapping, GetScaledFontSize(LineHeight), 0, GetScaledFontSize(LetterSpacing))
+                defaultProperties, TextWrapping, LineHeight * fontScaleFactor, 0, LetterSpacing * fontScaleFactor)
             {
-                LineSpacing = GetScaledFontSize(LineSpacing),
+                LineSpacing = LineSpacing * fontScaleFactor,
             };
 
             ITextSource textSource;
@@ -865,7 +866,7 @@ namespace Avalonia.Controls
             switch (change.Property.Name)
             {
                 case nameof(FontSize):
-                case nameof(IsPlatformTextScalingEnabled):
+                case nameof(TextScaler):
                 case nameof(FontWeight):
                 case nameof(FontStyle):
                 case nameof(FontFamily):

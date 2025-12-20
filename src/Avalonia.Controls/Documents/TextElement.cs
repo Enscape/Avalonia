@@ -15,12 +15,11 @@ namespace Avalonia.Controls.Documents
             Border.BackgroundProperty.AddOwner<TextElement>();
 
         /// <summary>
-        /// Defines the <see cref="IsPlatformTextScalingEnabled"/> property.
+        /// Defines the <see cref="TextScaler"/> property.
         /// </summary>
-        public static readonly AttachedProperty<bool> IsPlatformTextScalingEnabledProperty =
-            AvaloniaProperty.RegisterAttached<TextElement, Control, bool>(
-                nameof(IsPlatformTextScalingEnabled),
-                defaultValue: false,
+        public static readonly AttachedProperty<TextScaler?> TextScalerProperty =
+            AvaloniaProperty.RegisterAttached<TextElement, Control, TextScaler?>(
+                nameof(TextScaler),
                 inherits: true);
 
         /// <summary>
@@ -116,10 +115,10 @@ namespace Avalonia.Controls.Documents
         /// <see cref="TextBlock.LineSpacing"/> should be scaled according to platform text scaling rules when measuring and rendering this control.
         /// </summary>
         /// <remarks>Text scaling is typically not uniform. Smaller text scales up faster than larger text.</remarks>
-        public bool IsPlatformTextScalingEnabled
+        public TextScaler? TextScaler
         {
-            get => GetValue(IsPlatformTextScalingEnabledProperty);
-            set => SetValue(IsPlatformTextScalingEnabledProperty, value);
+            get => GetValue(TextScalerProperty);
+            set => SetValue(TextScalerProperty, value);
         }
 
         /// <summary>
@@ -194,8 +193,8 @@ namespace Avalonia.Controls.Documents
             set => SetValue(LetterSpacingProperty, value);
         }
 
-        public static bool GetIsPlatformTextScalingEnabled(Control control) => control.GetValue(IsPlatformTextScalingEnabledProperty);
-        public static void SetIsPlatformTextScalingEnabled(Control control, bool value) => control.SetValue(IsPlatformTextScalingEnabledProperty, value);
+        public static TextScaler? GetTextScaler(Control control) => control.GetValue(TextScalerProperty);
+        public static void SetTextScaler(Control control, TextScaler? value) => control.SetValue(TextScalerProperty, value);
 
         /// <summary>
         /// Gets the value of the attached <see cref="FontFamilyProperty"/> on a control.
@@ -382,7 +381,7 @@ namespace Avalonia.Controls.Documents
                 case nameof(Background):
                 case nameof(FontFamily):
                 case nameof(FontSize):
-                case nameof(IsPlatformTextScalingEnabled):
+                case nameof(TextScaler):
                 case nameof(FontStyle):
                 case nameof(FontWeight):
                 case nameof(FontStretch):

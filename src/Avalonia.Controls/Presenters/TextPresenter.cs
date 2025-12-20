@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -47,11 +48,8 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<int> SelectionEndProperty =
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>(new(coerce: TextBox.CoerceCaretIndex));
 
-        /// <summary>
-        /// Defines the <see cref="IsPlatformTextScalingEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsPlatformTextScalingEnabledProperty =
-            TextElement.IsPlatformTextScalingEnabledProperty.AddOwner<TextPresenter>();
+        public static readonly StyledProperty<TextScaler?> TextScalerProperty =
+            TextElement.TextScalerProperty.AddOwner<TextPresenter>();
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
@@ -130,11 +128,10 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(BackgroundProperty, value);
         }
 
-        /// <inheritdoc cref="TextElement.IsPlatformTextScalingEnabled"/>
-        public bool IsPlatformTextScalingEnabled
+        public TextScaler? TextScaler
         {
-            get => GetValue(IsPlatformTextScalingEnabledProperty);
-            set => SetValue(IsPlatformTextScalingEnabledProperty, value);
+            get => GetValue(TextScalerProperty);
+            set => SetValue(TextScalerProperty, value);
         }
 
         /// <summary>
@@ -194,12 +191,12 @@ namespace Avalonia.Controls.Presenters
             get => TextElement.GetFontSize(this);
             set => TextElement.SetFontSize(this, value);
         }
-        
-        /// <inheritdoc cref="IPlatformTextScaleable.GetScaledFontSize(double)"/>
-        protected double GetScaledFontSize(double baseFontSize) => !double.IsNaN(baseFontSize) && IsPlatformTextScalingEnabled && 
-            TopLevel.GetTopLevel(this) is { PlatformSettings: { } platformSettings } ? platformSettings.GetScaledFontSize(baseFontSize) : baseFontSize;
 
+        /// <inheritdoc cref="IPlatformTextScaleable.GetScaledFontSize(double)"/>
+        protected double GetScaledFontSize(double baseFontSize) => TextScaler?.GetScaledFontSize(this, baseFontSize) ?? baseFontSize;
+        
         double IPlatformTextScaleable.GetScaledFontSize(double baseFontSize) => GetScaledFontSize(baseFontSize);
+        IPlatformSettings? IPlatformTextScaleable.PlatformSettings => TopLevel.GetTopLevel(this)?.PlatformSettings;
 
         /// <summary>
         /// Gets or sets the font style.
@@ -356,7 +353,7 @@ namespace Avalonia.Controls.Presenters
 
         void IPlatformTextScaleable.OnPlatformTextScalingChanged()
         {
-            if (IsPlatformTextScalingEnabled)
+            if (TextScaler != null)
             {
                 InvalidateMeasure();
             }
